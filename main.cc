@@ -8,32 +8,31 @@
 using namespace std;
 
 int main(int argc, char *argv[]) {
-    int NoOfDimensions;
+    // Take in arguments and format the vectors as vectors for the program
+    // Reads input variables, parses them and stores them in the vectors array
     std::vector<std::vector<int>> vectors;
     for (int i = 1; i < argc; ++i) {
         std::cout << "Argument " << i << ": " << argv[i] << std::endl;
-        std::istringstream iss(argv[i]);
         std::vector<int> currentInputvalues;
-        char x;
-        iss >> x;
+        std::string currentValue = argv[i];
+        std::stringstream ss(currentValue);
 
-        while (iss >> x) {
-            if (x == ',' || x == ']') {
-                continue;
-            }
-            int value;
-            if (iss >> value) {
-                currentInputvalues.push_back(value);
-            } else {
-                std::cerr << "Error reading the input string." << std::endl;
-                return 1;
-            }
-        }
+        ss.ignore(1);
+
+        int num;
+        while (ss >> num) {
+            currentInputvalues.push_back(num);
+            ss.ignore(1);
+        };
+        vectors.push_back(currentInputvalues);
     }
-    std::cout << "Input strings have been extracted to vectors.";
-    for (const std::vector<int>& array : vectors) {
-        for (int value : array) {
-            std::cout << value << ' ';
+
+
+    // Ouptuts the vectors array
+    std::cout << "Input strings have been extracted to vectors." << std::endl;
+    for (const auto &row : vectors) {
+        for (const auto &elem : row) {
+            std::cout << elem << " ";
         }
         std::cout << std::endl;
     }
