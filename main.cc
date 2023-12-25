@@ -11,6 +11,38 @@ using namespace std;
 using Vector = vector<long double>;
 using Matrix = vector<Vector>;
 
+int fetchVectorLength(Matrix& x) {
+
+};
+
+Matrix makeLinearlyIndependent(Matrix& x) {
+    // performs row operations to convert matrix to row echelon form
+
+    // get rows and columns of matrix
+    int m = x.size();
+    int n = x[0].size();
+
+    for (int i = 0; i < m; i++) {
+        std::cout << "run" << std::endl;
+        double pivot = x[i][i];
+
+        for (int j = i; i<n;i++) {
+            x[i][j] = x[i][j] / pivot;
+        };
+
+        for (int k = i = 1; k < m; k++) {
+            double f = x[k][i];
+            for (int j = 1; j < n; j++) {
+                x[k][j] -=  f * x[i][j];
+                if (x[k][j] == 0) {
+                    break;
+                }
+            };
+        }
+    };
+    return x;
+};
+
 void printMatrix(Matrix& x) {
     std::cout << "The Matrix:" << std::endl;
     for (const auto &row : x) {
@@ -22,6 +54,7 @@ void printMatrix(Matrix& x) {
 }
 
 Vector normal(const Vector& v) {
+    // Normalises the matrix
     Vector x;
     double length = 0.0;
 
@@ -66,6 +99,7 @@ Matrix gram_schmidt_process(Matrix& a) {
     return tempMatrix;
 };
 
+// need to check for zero division
 void LLL(Matrix& basis, double delta) {
     size_t n = basis.size();
     Matrix mu(n, Vector(n, 0.0));
@@ -102,6 +136,7 @@ int main(int argc, char *argv[]) {
     // Sets a variable for dimension of vectors, to see if they differ as this will be an invalid input
     int dimension;
     dimension = 0;
+
     Matrix matrix;
     for (int i = 1; i < argc; ++i) {
         std::cout << "Argument " << i << ": " << argv[i] << std::endl;
@@ -137,10 +172,22 @@ int main(int argc, char *argv[]) {
         }        
     }
 
-    Matrix newMatrix = gram_schmidt_process(matrix);
+    std::cout << "Dimension of matrix: " << dimension << std::endl;
+
+    // Ensures matrix is linearly independent
+    Matrix newMatrix = makeLinearlyIndependent(matrix);
+
+    // Applies gram-schmidt process to matrix
+    // newMatrix = gram_schmidt_process(newMatrix);
+    
+    // Applies LLL algorithm to matrix
     double delta = 0.5;
-    LLL(newMatrix, delta);
-    printMatrix(newMatrix);
+    // LLL(newMatrix, delta);
+
+    // Prints new matrix as a result
+    // printMatrix(newMatrix);
+
+
     return 0;
 }
 

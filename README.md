@@ -10,7 +10,12 @@ SVP Coursework for Programming Paradigms
 - Format them into vectors and then matrices
 - Apply gram-schmidt to it so that it makes it a basis
 - Apply LLL
+- New approach - https://perso.ens-lyon.fr/damien.stehle/downloads/SVPCVP.pdf
 
 ## References:
 - gram-schmidt = https://math.hmc.edu/calculus/hmc-mathematics-calculus-online-tutorials/linear-algebra/gram-schmidt-method/
 - LLL = https://en.wikipedia.org/wiki/Lenstra%E2%80%93Lenstra%E2%80%93Lov%C3%A1sz_lattice_basis_reduction_algorithm
+- SVP paper = https://courses.cs.washington.edu/courses/cse522/04au/notes/lect18.pdf
+- Veroni Cell = https://perso.ens-lyon.fr/damien.stehle/downloads/SVPCVP.pdf
+- Example of problem = https://math.stackexchange.com/questions/2187858/example-of-difficult-base-for-the-lattice-problems
+- Academic Paper = https://web.eecs.umich.edu/~cpeikert/lic13/lec02.pdf
