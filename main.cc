@@ -11,8 +11,17 @@ using namespace std;
 using Vector = vector<long double>;
 using Matrix = vector<Vector>;
 
-int fetchVectorLength(Matrix& x) {
+void fetchVectorLength(Matrix& x) {
+    Vector shortestVector = x[0];
+    int NoOfDimensions = x.size();
 
+    float shortestLength = 0.0;
+
+    for (int i = 0; i < NoOfDimensions; i++) {
+        shortestLength += shortestVector[i] * shortestVector[i];
+    };
+    
+    std::cout << "Shortest vector length: " << shortestLength << std::endl;
 };
 
 Matrix makeLinearlyIndependent(Matrix& x) {
@@ -22,24 +31,29 @@ Matrix makeLinearlyIndependent(Matrix& x) {
     int m = x.size();
     int n = x[0].size();
 
-    for (int i = 0; i < m; i++) {
-        std::cout << "run" << std::endl;
-        double pivot = x[i][i];
+    // DOESNT WORK
+    // for (int i = 0; i < m; i++) {
+    //     std::cout << i << std::endl;
+    //     double pivot = x[i][i];
 
-        for (int j = i; i<n;i++) {
-            x[i][j] = x[i][j] / pivot;
-        };
+    //     if (pivot == 0) {
+    //         return x;
+    //     }
 
-        for (int k = i = 1; k < m; k++) {
-            double f = x[k][i];
-            for (int j = 1; j < n; j++) {
-                x[k][j] -=  f * x[i][j];
-                if (x[k][j] == 0) {
-                    break;
-                }
-            };
-        }
-    };
+    //     for (int j = i; j < n; j++) {
+    //         x[i][j] /= pivot;
+    //     };
+
+    //     for (int k = i + 1; k < m; k++) {
+    //         double f = x[k][i];
+    //         for (int j = 1; j < n; j++) {
+    //             x[k][j] -=  f * x[i][j];
+    //         };
+    //     }
+    // };
+
+    // NEW VERSION
+    
     return x;
 };
 
@@ -144,6 +158,7 @@ int main(int argc, char *argv[]) {
         std::string currentValue = argv[i];
         std::stringstream ss(currentValue);
 
+        // ignores the [
         ss.ignore(1);
 
         int tempDimension;
@@ -185,9 +200,13 @@ int main(int argc, char *argv[]) {
     // LLL(newMatrix, delta);
 
     // Prints new matrix as a result
-    // printMatrix(newMatrix);
+    printMatrix(newMatrix);
 
+    // Fetches shortest vector
+    fetchVectorLength(newMatrix);
 
+    // Outputs it to txt file
+    // to be done at the end
     return 0;
 }
 
