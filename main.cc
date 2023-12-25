@@ -53,7 +53,6 @@ Matrix makeLinearlyIndependent(Matrix& x) {
     // };
 
     // NEW VERSION
-    
     return x;
 };
 
