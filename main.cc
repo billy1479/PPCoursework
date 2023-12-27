@@ -28,31 +28,9 @@ Matrix makeLinearlyIndependent(Matrix& x) {
     // performs row operations to convert matrix to row echelon form
 
     // get rows and columns of matrix
-    int m = x.size();
-    int n = x[0].size();
+    int m = x.size(); // rows
+    int n = x[0].size(); // columns
 
-    // DOESNT WORK
-    // for (int i = 0; i < m; i++) {
-    //     std::cout << i << std::endl;
-    //     double pivot = x[i][i];
-
-    //     if (pivot == 0) {
-    //         return x;
-    //     }
-
-    //     for (int j = i; j < n; j++) {
-    //         x[i][j] /= pivot;
-    //     };
-
-    //     for (int k = i + 1; k < m; k++) {
-    //         double f = x[k][i];
-    //         for (int j = 1; j < n; j++) {
-    //             x[k][j] -=  f * x[i][j];
-    //         };
-    //     }
-    // };
-
-    // NEW VERSION
     return x;
 };
 
