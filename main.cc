@@ -30,7 +30,37 @@ Matrix makeLinearlyIndependent(Matrix& x) {
     // get rows and columns of matrix
     int m = x.size(); // rows
     int n = x[0].size(); // columns
+    int lead = 0; // for indexing
 
+    for (int r = 0; r < m; r++) {
+        if (lead >= n) {
+            return x;
+        };
+        int i = r;
+        while (x[i][lead] == 0) {
+            ++i;
+            if (i == m) {
+                i = r;
+                if(++lead == n) {
+                    return x;
+                }
+            }
+        };
+        std::swap(x[i],x[r]);
+        double lv = x[r][lead];
+
+        for (auto& mrx : x[r]) mrx /= lv;
+
+        for (i = 0; i < m; ++i) {
+            if (i != r) {
+                lv = x[i][lead];
+                for (int j = 0; j < n; ++j) {
+                    x[i][j] -= lv * x[r][j];
+                }
+            }
+        }
+        ++lead;
+    }
     return x;
 };
 
@@ -62,32 +92,64 @@ Vector normal(const Vector& v) {
     return x;
 };
 
-Matrix gram_schmidt_process(Matrix& a) {
-    // Sets m and n as the number of rows and columns
-    int m = a.size();
-    int n = a[0].size();
+// Matrix gram_schmidt_process(Matrix& a) {
+//     // Sets m and n as the number of rows and columns
+//     int m = a.size();
+//     int n = a[0].size();
 
-    // Declares a new matrix which will be the result of GS on our current matrix (a)
-    Matrix tempMatrix(m, Vector(n, 0.0));
+//     // Declares a new matrix which will be the result of GS on our current matrix (a)
+//     Matrix tempMatrix(m, Vector(n, 0.0));
 
-    for (int j = 0; j < m; ++j) {
-        tempMatrix[j] = a[j];
+//     for (int j = 0; j < m; ++j) {
+//         tempMatrix[j] = a[j];
 
-        for (int i = 0; i < j; ++i) {
-            double dotP = 0.0;
+//         for (int i = 0; i < j; ++i) {
+//             double dotP = 0.0;
 
-            for (int k = 0; k < n; ++k) {
-                dotP += a[j][k] * tempMatrix[i][k];
-            }
+//             for (int k = 0; k < n; ++k) {
+//                 dotP += a[j][k] * tempMatrix[i][k];
+//             }
 
-            for (int k = 0; k < n; ++k) {
-                tempMatrix[j][k] -= dotP * tempMatrix[i][k];
+//             for (int k = 0; k < n; ++k) {
+//                 tempMatrix[j][k] -= dotP * tempMatrix[i][k];
+//             }
+//         }
+
+//         tempMatrix[j] = normal(tempMatrix[j]);
+//     }
+//     return tempMatrix;
+// };
+
+double dp(Vector& a, Vector&b) {
+    double product = 0;
+    for(size_t i = 0; i < a.size(); i++) {
+        product += a[i] * b[i];
+    }
+    return product;
+};
+
+Matrix gs(Matrix& x) {
+    Matrix oSet = x;
+
+    for (size_t i = 1; i < oSet.size(); i++) {
+        for (size_t j = 0; j < i; j++) {
+            double dot = dp(x[i], oSet[j]);
+            for (size_t k = 0; k < oSet[i].size(); k++) {
+                oSet[i][k] -= (dot * oSet[j][k]);
+            };
+        }
+    }
+
+    for (size_t i=0;i<oSet.size();i++) {
+        double norm = sqrt(dp(oSet[i],oSet[i]));
+        if (norm != 0) {
+            for (size_t j = 0; j < oSet[i].size(); j++) {
+                oSet[i][j] /= norm;
             }
         }
-
-        tempMatrix[j] = normal(tempMatrix[j]);
     }
-    return tempMatrix;
+
+    return oSet;
 };
 
 // need to check for zero division
@@ -170,17 +232,17 @@ int main(int argc, char *argv[]) {
     Matrix newMatrix = makeLinearlyIndependent(matrix);
 
     // Applies gram-schmidt process to matrix
-    // newMatrix = gram_schmidt_process(newMatrix);
+    Matrix newMatrix2 = gs(newMatrix);
     
     // Applies LLL algorithm to matrix
     double delta = 0.5;
     // LLL(newMatrix, delta);
 
     // Prints new matrix as a result
-    printMatrix(newMatrix);
+    printMatrix(newMatrix2);
 
     // Fetches shortest vector
-    fetchVectorLength(newMatrix);
+    // fetchVectorLength(newMatrix);
 
     // Outputs it to txt file
     // to be done at the end
