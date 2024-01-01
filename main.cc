@@ -24,7 +24,7 @@ void fetchVectorLength(Matrix& x) {
     std::cout << "Shortest vector length: " << shortestLength << std::endl;
 };
 
-Matrix makeLinearlyIndependent(Matrix& x) {
+Matrix rref(Matrix& x) {
     // performs row operations to convert matrix to row echelon form
 
     // get rows and columns of matrix
@@ -74,85 +74,44 @@ void printMatrix(Matrix& x) {
     }
 }
 
-Vector normal(const Vector& v) {
-    // Normalises the matrix
-    Vector x;
-    double length = 0.0;
-
-    for (double val : v) {
-        length += val * val;
-    }
-
-    length = sqrt(length);
-
-    for (double val : v) {
-        x.push_back(val / length);
-    }
-
-    return x;
-};
-
-// Matrix gram_schmidt_process(Matrix& a) {
-//     // Sets m and n as the number of rows and columns
-//     int m = a.size();
-//     int n = a[0].size();
-
-//     // Declares a new matrix which will be the result of GS on our current matrix (a)
-//     Matrix tempMatrix(m, Vector(n, 0.0));
-
-//     for (int j = 0; j < m; ++j) {
-//         tempMatrix[j] = a[j];
-
-//         for (int i = 0; i < j; ++i) {
-//             double dotP = 0.0;
-
-//             for (int k = 0; k < n; ++k) {
-//                 dotP += a[j][k] * tempMatrix[i][k];
-//             }
-
-//             for (int k = 0; k < n; ++k) {
-//                 tempMatrix[j][k] -= dotP * tempMatrix[i][k];
-//             }
-//         }
-
-//         tempMatrix[j] = normal(tempMatrix[j]);
-//     }
-//     return tempMatrix;
-// };
-
-double dp(Vector& a, Vector&b) {
-    double product = 0;
-    for(size_t i = 0; i < a.size(); i++) {
+double dotProduct(const Vector& a, const Vector& b) {
+    double product = 0.0;
+    for (int i = 0; i < a.size(); i++)
         product += a[i] * b[i];
-    }
     return product;
-};
+}
 
-Matrix gs(Matrix& x) {
-    Matrix oSet = x;
+Vector subtract(const Vector& a, const Vector& b) {
+    Vector result(a.size());
+    for (int i = 0; i < a.size(); i++)
+        result[i] = a[i] - b[i];
+    return result;
+}
 
-    for (size_t i = 1; i < oSet.size(); i++) {
-        for (size_t j = 0; j < i; j++) {
-            double dot = dp(x[i], oSet[j]);
-            for (size_t k = 0; k < oSet[i].size(); k++) {
-                oSet[i][k] -= (dot * oSet[j][k]);
-            };
-        }
+Vector multiply(const Vector v, double scalar) {
+    Vector result(v.size());
+    for (int i = 0; i < v.size(); i++)
+        result[i] = v[i] * scalar;
+    return result;
+}
+
+Vector normalize(const Vector& v) {
+    double magnitude = sqrt(dotProduct(v, v));
+    return multiply(v, 1.0 / magnitude);
+}
+
+Matrix gramSchmidt(const Matrix& vectors) {
+    Matrix result;
+    for (const auto& v : vectors) {
+        Vector temp = v;
+        for (const auto& u : result)
+            temp = subtract(temp, multiply(u, dotProduct(v, u)));
+        result.push_back(normalize(temp));
     }
+    return result;
+}
 
-    for (size_t i=0;i<oSet.size();i++) {
-        double norm = sqrt(dp(oSet[i],oSet[i]));
-        if (norm != 0) {
-            for (size_t j = 0; j < oSet[i].size(); j++) {
-                oSet[i][j] /= norm;
-            }
-        }
-    }
-
-    return oSet;
-};
-
-// need to check for zero division
+// This works but obvioulsy is bad in general
 void LLL(Matrix& basis, double delta) {
     size_t n = basis.size();
     Matrix mu(n, Vector(n, 0.0));
@@ -229,20 +188,22 @@ int main(int argc, char *argv[]) {
     std::cout << "Dimension of matrix: " << dimension << std::endl;
 
     // Ensures matrix is linearly independent
-    Matrix newMatrix = makeLinearlyIndependent(matrix);
+    // Matrix newMatrix = makeLinearlyIndependent(matrix);
 
     // Applies gram-schmidt process to matrix
-    Matrix newMatrix2 = gs(newMatrix);
+    // Matrix newMatrix2 = gs2(matrix);
     
     // Applies LLL algorithm to matrix
     double delta = 0.5;
     // LLL(newMatrix, delta);
 
+    Matrix newMatrix = gramSchmidt(matrix);
+
     // Prints new matrix as a result
-    printMatrix(newMatrix2);
+    printMatrix(newMatrix);
 
     // Fetches shortest vector
-    // fetchVectorLength(newMatrix);
+    fetchVectorLength(newMatrix);
 
     // Outputs it to txt file
     // to be done at the end
