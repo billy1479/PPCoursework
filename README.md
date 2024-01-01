@@ -11,6 +11,7 @@ SVP Coursework for Programming Paradigms
 - Apply gram-schmidt to it so that it makes it a basis
 - Apply LLL
 - New approach - https://perso.ens-lyon.fr/damien.stehle/downloads/SVPCVP.pdf
+- Not sure? - https://thesai.org/Downloads/Volume12No5/Paper_98-Techniques_for_Solving_Shortest_Vector_Problem.pdf
 
 ## References:
 - gram-schmidt = https://math.hmc.edu/calculus/hmc-mathematics-calculus-online-tutorials/linear-algebra/gram-schmidt-method/
@@ -19,3 +20,5 @@ SVP Coursework for Programming Paradigms
 - Veroni Cell = https://perso.ens-lyon.fr/damien.stehle/downloads/SVPCVP.pdf
 - Example of problem = https://math.stackexchange.com/questions/2187858/example-of-difficult-base-for-the-lattice-problems
 - Academic Paper = https://web.eecs.umich.edu/~cpeikert/lic13/lec02.pdf
+- Potential ways to do it = https://thesai.org/Downloads/Volume12No5/Paper_98-Techniques_for_Solving_Shortest_Vector_Problem.pdf
+

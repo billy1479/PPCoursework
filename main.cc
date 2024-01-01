@@ -112,7 +112,7 @@ Matrix gramSchmidt(const Matrix& vectors) {
 }
 
 // This works but obvioulsy is bad in general
-void LLL(Matrix& basis, double delta) {
+Matrix LLL(Matrix& basis, double delta) {
     size_t n = basis.size();
     Matrix mu(n, Vector(n, 0.0));
 
@@ -139,6 +139,19 @@ void LLL(Matrix& basis, double delta) {
             }
         }
     }
+    return basis;
+};
+
+Matrix bkz(Matrix& basis) {
+    // Number of basis vectors given
+    int n = basis.size();
+
+    for (int i = 0; i < n; i++) {
+        Matrix basisPrime = LLL(basis, 0.75);
+        
+    }
+
+    return basis;
 };
 
 int main(int argc, char *argv[]) {
@@ -194,7 +207,7 @@ int main(int argc, char *argv[]) {
     // Matrix newMatrix2 = gs2(matrix);
     
     // Applies LLL algorithm to matrix
-    double delta = 0.5;
+    double delta = 0.75;
     // LLL(newMatrix, delta);
 
     Matrix newMatrix = gramSchmidt(matrix);
