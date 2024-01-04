@@ -125,7 +125,11 @@ Matrix LLL(Matrix& basis, double delta) {
             }
         }
         if (normalize(basis_prime[index]) >= (delta - multiply((dotProduct(basis[index], basis_prime[index - 1]) * dotProduct(basis[index], basis_prime[index - 1]), normalize(basis_prime[index - 1]))))) {
-
+            index += 1;
+        } else {
+            basis[index], basis[index-1] = basis[index-1], basis[index];
+            basis_prime = gramSchmidt(basis);
+            index = std::max(index-1, 1);            
         }
     }
 
