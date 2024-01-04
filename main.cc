@@ -113,41 +113,31 @@ Matrix gramSchmidt(const Matrix& vectors) {
 
 // This works but obvioulsy is bad in general
 Matrix LLL(Matrix& basis, double delta) {
-    size_t n = basis.size();
-    Matrix mu(n, Vector(n, 0.0));
+    Matrix basis_prime = gramSchmidt(basis);
+    int index = 1;
 
-    for (size_t i = 1; i < n; ++i) {
-        for (size_t j = 0; j < i; ++j) {
-            mu[i][j] = round(basis[i][j] / basis[j][j]);
-            for (size_t k = 0; k < j; ++k) {
-                mu[i][j] -= round(mu[i][k] * basis[j][k] / basis[j][j]);
+    while (index < basis_prime.size()) {
+        for (int j = index - 1; j >= -1; j--) {
+            double mu = round(dotProduct(basis[index], basis_prime[j]) / dotProduct(basis_prime[j], basis_prime[j]));
+            if (mu != 0) {
+                basis[index] = subtract(basis[index], multiply(basis[j], mu));
+                basis_prime = gramSchmidt(basis);
             }
         }
+        if (normalize(basis_prime[index]) >= (delta - multiply((dotProduct(basis[index], basis_prime[index - 1]) * dotProduct(basis[index], basis_prime[index - 1]), normalize(basis_prime[index - 1]))))) {
 
-        if (std::abs(basis[i][i] - mu[i][i]) > 0.5) {
-            for (size_t k = 0; k <= i - 1; ++k) {
-                basis[i][k] -= round(mu[i][k] * basis[i][i] / basis[i][i]);
-            }
         }
     }
 
-    for (size_t i = n - 1; i > 0; --i) {
-        for (size_t j = i - 1; j < i; --j) {
-            double ratio = round(mu[i][j] * basis[i][j] / basis[j][j]);
-            for (size_t k = 0; k <= j; ++k) {
-                basis[i][k] -= ratio * basis[j][k];
-            }
-        }
-    }
     return basis;
 };
 
 Matrix bkz(Matrix& basis) {
     // Number of basis vectors given
     int n = basis.size();
+    Matrix basisPrime = LLL(basis, 0.75);
 
     for (int i = 0; i < n; i++) {
-        Matrix basisPrime = LLL(basis, 0.75);
         
     }
 
@@ -210,13 +200,15 @@ int main(int argc, char *argv[]) {
     double delta = 0.75;
     // LLL(newMatrix, delta);
 
-    Matrix newMatrix = gramSchmidt(matrix);
+    // LLL test below - need to sort first 
+    // "[1,0,0,1345]" "[0,1,0,35]" "[0,0,1,154]" should be "[0,9,-2,7]" "[1,1,-9,-6]" "[1,-3,-8,8]"
+    Matrix newMatrix = LLL(matrix, delta);
 
     // Prints new matrix as a result
     printMatrix(newMatrix);
 
     // Fetches shortest vector
-    fetchVectorLength(newMatrix);
+    // fetchVectorLength(newMatrix);
 
     // Outputs it to txt file
     // to be done at the end
