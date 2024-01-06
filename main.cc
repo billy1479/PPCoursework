@@ -95,6 +95,13 @@ Vector multiply(const Vector v, double scalar) {
     return result;
 }
 
+double eNorm(const Vector& v) {
+    double sum = 0.0;
+    for (double x : v) {
+        sum += x * x;
+    return sqrt(sum);
+};
+
 Vector normalize(const Vector& v) {
     double magnitude = sqrt(dotProduct(v, v));
     return multiply(v, 1.0 / magnitude);
@@ -117,14 +124,15 @@ Matrix LLL(Matrix& basis, double delta) {
     int index = 1;
 
     while (index < basis_prime.size()) {
-        for (int j = index - 1; j >= -1; j--) {
+        cout << index << endl;
+        for (int j = index - 1; j > -1; j--) {
             double mu = round(dotProduct(basis[index], basis_prime[j]) / dotProduct(basis_prime[j], basis_prime[j]));
             if (mu != 0) {
                 basis[index] = subtract(basis[index], multiply(basis[j], mu));
                 basis_prime = gramSchmidt(basis);
             }
         }
-        if (normalize(basis_prime[index]) >= (delta - pow((dotProduct(basis[index], basis_prime[index-1])),2) * normalize(basis_prime[index-1]))) {
+        if (eNorm(basis_prime[index]) >= (delta - pow((dotProduct(basis[index], basis_prime[index-1])),2) * eNorm(basis_prime[index-1]))) {
             index += 1;
         } else {
             basis[index], basis[index-1] = basis[index-1], basis[index];
@@ -201,7 +209,7 @@ int main(int argc, char *argv[]) {
     // Matrix newMatrix2 = gs2(matrix);
     
     // Applies LLL algorithm to matrix
-    double delta = 0.75;
+    double delta = 0.5;
     // LLL(newMatrix, delta);
 
     // LLL test below - need to sort first 
