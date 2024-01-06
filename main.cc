@@ -99,6 +99,7 @@ double eNorm(const Vector& v) {
     double sum = 0.0;
     for (double x : v) {
         sum += x * x;
+    }
     return sqrt(sum);
 };
 
