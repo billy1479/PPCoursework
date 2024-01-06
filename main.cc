@@ -124,7 +124,7 @@ Matrix LLL(Matrix& basis, double delta) {
                 basis_prime = gramSchmidt(basis);
             }
         }
-        if (normalize(basis_prime[index]) >= (delta - multiply((dotProduct(basis[index], basis_prime[index - 1]) * dotProduct(basis[index], basis_prime[index - 1]), normalize(basis_prime[index - 1]))))) {
+        if (normalize(basis_prime[index]) >= (delta - pow((dotProduct(basis[index], basis_prime[index-1])),2) * normalize(basis_prime[index-1]))) {
             index += 1;
         } else {
             basis[index], basis[index-1] = basis[index-1], basis[index];
