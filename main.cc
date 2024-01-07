@@ -109,17 +109,31 @@ Vector normalize(const Vector& v) {
 }
 
 Matrix gramSchmidt(const Matrix& vectors) {
-    Matrix result;
-    for (const auto& v : vectors) {
-        Vector temp = v;
-        for (const auto& u : result)
-            temp = subtract(temp, multiply(u, dotProduct(v, u)));
-        result.push_back(normalize(temp));
+    Matrix result = vectors;
+    int dimension = vectors.size();
+
+    Matrix r(dimension, Vector(dimension));
+    Matrix v = vectors;
+
+    for (int i = 0; i < dimension; ++i) {
+        r[i][i] = round(eNorm(v[i]));
+        for (int j = 0; j < dimension; ++j) {
+            if (r[i][i] == 0) {
+                cout << "Error - Division by zero" << endl;
+            } else {
+                result[i][j] = v[i][j] / r[i][i];
+            }
+        }
+        for(int k = i + 1; k < dimension; ++k) {
+            r[i][k] = dotProduct(result[i], v[k]);
+            for (int j = 0;j < dimension;++j) {
+                v[k][j] = v[k][j] - r[i][k] * result[i][j];
+            }
+        }
     }
     return result;
 }
 
-// This works but obvioulsy is bad in general
 Matrix LLL(Matrix& basis, double delta) {
     Matrix basis_prime = gramSchmidt(basis);
     int index = 1;
@@ -210,7 +224,7 @@ int main(int argc, char *argv[]) {
     // Matrix newMatrix2 = gs2(matrix);
     
     // Applies LLL algorithm to matrix
-    double delta = 0.5;
+    double delta = 0.75;
     // LLL(newMatrix, delta);
 
     // LLL test below - need to sort first 
