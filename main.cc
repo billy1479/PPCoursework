@@ -74,6 +74,13 @@ void printMatrix(Matrix& x) {
     }
 }
 
+void printVector(Vector& x) {
+    cout << "The Vector:" << endl;
+    for (const auto &row : x) {
+        cout << row << endl;
+    }
+}
+
 double dotProduct(const Vector& a, const Vector& b) {
     double product = 0.0;
     for (int i = 0; i < a.size(); i++)
@@ -111,6 +118,14 @@ Vector normalize(const Vector& v) {
     return multiply(v, 1.0 / magnitude);
 }
 
+Vector combineVectors(const Vector& a, const Vector& b) {
+    Vector result(a.size());
+    for (int i = 0; i < a.size();i++) {
+        result[i] = a[i] + b[i];
+    }
+    return result;
+}
+
 Matrix gramSchmidt(const Matrix& vectors) {
     Matrix result = vectors;
     int dimension = vectors.size();
@@ -122,7 +137,7 @@ Matrix gramSchmidt(const Matrix& vectors) {
         r[i][i] = round(eNorm(v[i]));
         for (int j = 0; j < dimension; ++j) {
             if (r[i][i] == 0) {
-                cout << "Error - Division by zero" << endl;
+                cout << "Error - Division by zero (Linearly Dependent vectors)" << endl;
             } else {
                 result[i][j] = v[i][j] / r[i][i];
             }
@@ -130,7 +145,7 @@ Matrix gramSchmidt(const Matrix& vectors) {
         for(int k = i + 1; k < dimension; ++k) {
             r[i][k] = dotProduct(result[i], v[k]);
             for (int j = 0;j < dimension;++j) {
-                v[k][j] = v[k][j] - r[i][k] * result[i][j];
+                v[k][j] = v[k][j] - (r[i][k] * result[i][j]);
             }
         }
     }
@@ -161,6 +176,21 @@ Matrix LLL(Matrix& basis, double delta) {
 
     return basis;
 };
+
+// Generates all possible vectors based off given basis
+Vector Enumeration(Matrix& basis) {
+    Vector shortest = basis[0];
+
+    for (int i = 0; i <basis.size();i++){
+        for (int j = 0; j < basis.size(); j++) {
+            Vector n = combineVectors(basis[i], basis[j]);
+            if (eNorm(n) < eNorm(shortest)) {
+                shortest = n;
+            }
+        }
+    }
+    return shortest;
+}
 
 Matrix bkz(Matrix& basis) {
     // Number of basis vectors given
@@ -226,20 +256,19 @@ int main(int argc, char *argv[]) {
     // Applies gram-schmidt process to matrix
     // Matrix newMatrix2 = gs2(matrix);
     Matrix gM = gramSchmidt(matrix);
-    printMatrix(gM);
     // Applies LLL algorithm to matrix
     double delta = 0.5;
     // LLL(newMatrix, delta);
 
     // LLL test below - need to sort first 
     // "[1,0,0,1345]" "[0,1,0,35]" "[0,0,1,154]" should be "[0,9,-2,7]" "[1,1,-9,-6]" "[1,-3,-8,8]"
-    Matrix newMatrix = LLL(matrix, delta);
+    Matrix newMatrix = LLL(gM, delta);
+
+    Vector shortest = Enumeration(newMatrix);
+    printVector(shortest);
 
     // Prints new matrix as a result
-    printMatrix(newMatrix);
-
-    // Fetches shortest vector
-    // fetchVectorLength(newMatrix);
+    // printMatrix(gM);
 
     // Outputs it to txt file
     // to be done at the end
