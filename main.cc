@@ -5,6 +5,7 @@
 #include <cmath>
 #include <sstream>
 
+
 using namespace std;
 
 // Construct matrix for problem
@@ -149,7 +150,7 @@ Matrix gramSchmidt(const Matrix& vectors) {
             }
         }
     }
-    return result;
+    return v;
 }
 
 Matrix LLL(Matrix& basis, double delta) {
@@ -159,8 +160,9 @@ Matrix LLL(Matrix& basis, double delta) {
     while (index < basis_prime.size()) {
         cout << index << endl;
         for (int j = index - 1; j > -1; j--) {
+                        // double mu = round(dotProduct(basis[index], basis_prime[j]) / dotProduct(basis_prime[j], basis_prime[j]));
             double mu = round(dotProduct(basis[index], basis_prime[j]) / dotProduct(basis_prime[j], basis_prime[j]));
-            if (mu != 0) {
+            if (abs(mu) > 0) {
                 basis[index] = subtract(basis[index], multiply(basis[j], mu));
                 basis_prime = gramSchmidt(basis);
             }
@@ -173,9 +175,15 @@ Matrix LLL(Matrix& basis, double delta) {
             index = std::max(index-1, 1);            
         }
     }
-
     return basis;
 };
+
+Matrix LLL2(Matrix& basis, double delta) {
+    Matrix result;
+
+
+    return result;
+}
 
 // Generates all possible vectors based off given basis
 Vector Enumeration(Matrix& basis) {
@@ -256,6 +264,7 @@ int main(int argc, char *argv[]) {
     // Applies gram-schmidt process to matrix
     // Matrix newMatrix2 = gs2(matrix);
     Matrix gM = gramSchmidt(matrix);
+    printMatrix(gM);
     // Applies LLL algorithm to matrix
     double delta = 0.5;
     // LLL(newMatrix, delta);
