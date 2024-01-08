@@ -81,6 +81,7 @@ double dotProduct(const Vector& a, const Vector& b) {
     return product;
 }
 
+// Subtracts two vectors from each other
 Vector subtract(const Vector& a, const Vector& b) {
     Vector result(a.size());
     for (int i = 0; i < a.size(); i++)
@@ -88,6 +89,7 @@ Vector subtract(const Vector& a, const Vector& b) {
     return result;
 }
 
+// Multiplies a vector and a scalar together
 Vector multiply(const Vector v, double scalar) {
     Vector result(v.size());
     for (int i = 0; i < v.size(); i++)
@@ -95,6 +97,7 @@ Vector multiply(const Vector v, double scalar) {
     return result;
 }
 
+// Returns the euclidean norm of a vector
 double eNorm(const Vector& v) {
     double sum = 0.0;
     for (double x : v) {
@@ -222,9 +225,10 @@ int main(int argc, char *argv[]) {
 
     // Applies gram-schmidt process to matrix
     // Matrix newMatrix2 = gs2(matrix);
-    
+    Matrix gM = gramSchmidt(matrix);
+    printMatrix(gM);
     // Applies LLL algorithm to matrix
-    double delta = 0.75;
+    double delta = 0.5;
     // LLL(newMatrix, delta);
 
     // LLL test below - need to sort first 
