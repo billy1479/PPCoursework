@@ -149,6 +149,51 @@ Matrix gs(Matrix& basis) {
     return result;
 }
 
+// Kinda hopeless
+Matrix LLL(Matrix& basis) {
+    
+}
+
+Vector reduce(Vector& v, Matrix& basis) {
+    for (auto& l : basis) {
+        int counter = 0;
+        while (bool state = true and counter <= basis.size()) {
+            Vector difference = subtract(v, l);
+            cout << "run" << endl;
+            if (eNorm(difference) >= eNorm(v)) {
+                state = false;
+            }
+            v = difference;
+            counter++;
+        }
+    }
+    return v;
+}
+
+// Maybe this is better
+Matrix sieve(Matrix& basis, int maxIt) {
+    Matrix tempMatrix;
+    int iterations = 0;
+
+    for (auto& x : basis) {
+        if (iterations >= maxIt) {
+            return tempMatrix;
+        }
+        x = reduce(x, basis);
+        if (eNorm(x) == 0) {
+        } else {
+            iterations++;
+            tempMatrix.push_back(x);
+        }
+    }
+
+    return tempMatrix;
+}
+
+
+
+
+
 int main(int argc, char *argv[]) {
     // Take in arguments and format the vectors as vectors for the program
     // Reads input variables, parses them and stores them in the vectors array
@@ -195,11 +240,13 @@ int main(int argc, char *argv[]) {
     std::cout << "Dimension of matrix: " << dimension << std::endl;
 
     // Generates all vectors in latice based off basis
-    Matrix newBasis = gs(matrix);
+    // Matrix newBasis = gs(matrix);
 
-    printMatrix(newBasis);
+    // printMatrix(newBasis);
 
-    Matrix lattice = enumumer(newBasis, 10);
+    // Matrix lattice = enumumer(newBasis, 10);
+
+    Matrix lattice = sieve(matrix,10);
 
     Vector x = shortestVector(lattice);
     double shortestNorm = eNorm(x);
