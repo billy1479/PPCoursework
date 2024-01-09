@@ -139,7 +139,7 @@ Matrix gs(Matrix& basis) {
 
     for (int i = 1; i < basis.size(); i++) {
         Vector vn = basis[i];
-        for (int j = 0; j < i; j++) {
+        for (int j = i; j < i; j++) {
             vn = subtract(vn, multiply(result[j], dotProduct(basis[i], result[j])));
         }
         vn = normalize(vn);
@@ -199,10 +199,13 @@ int main(int argc, char *argv[]) {
 
     printMatrix(newBasis);
 
-    Matrix lattice = enumumer(newBasis, 100);
+    Matrix lattice = enumumer(newBasis, 10);
 
     Vector x = shortestVector(lattice);
     double shortestNorm = eNorm(x);
+    cout << "The shortest vector is: " << endl;
+    printVector(x);
+
     cout << "The norm of the shortest vector in the lattice is " << shortestNorm << endl;
 
 
