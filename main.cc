@@ -105,6 +105,16 @@ Vector multiply(const Vector v, double scalar) {
     return result;
 }
 
+Vector multiplyVectors(Vector& v, Vector& x) {
+    Vector product(v.size());
+
+    for (size_t i = 0; i < v.size(); ++i) {
+        product[i] = v[i] * x[i];
+    }
+
+    return product;
+}
+
 // Returns the euclidean norm of a vector
 double eNorm(const Vector& v) {
     double sum = 0.0;
@@ -134,23 +144,68 @@ Matrix gramSchmidt(const Matrix& vectors) {
     Matrix r(dimension, Vector(dimension));
     Matrix v = vectors;
 
-    for (int i = 0; i < dimension; ++i) {
-        r[i][i] = round(eNorm(v[i]));
-        for (int j = 0; j < dimension; ++j) {
-            if (r[i][i] == 0) {
-                cout << "Error - Division by zero (Linearly Dependent vectors)" << endl;
-            } else {
-                result[i][j] = v[i][j] / r[i][i];
-            }
+    // for (int i = 0; i < dimension; ++i) {
+    //     // v[i][i] = round(eNorm(v[i]));
+    //     // for (int j = 0; j < dimension; ++j) {
+    //     //     if (v[i][i] == 0) {
+    //     //         cout << "Error - Division by zero (Linearly Dependent vectors)" << endl;
+    //     //     } else {
+    //     //         result[i][j] = v[i][j] / v[i][i];
+    //     //     }
+    //     // }
+    //     for(int k = i + 1; k < dimension; ++k) {
+    //         r[i][k] = dotProduct(result[i], v[k]);
+    //         for (int j = 0;j < k;++j) {
+    //             // v[k][j] = v[k][j] - (r[i][k] * result[i][j]);
+    //             v[k] = subtract(v[k], multiply(v[k], dotProduct(v[k], v[j]) / dotProduct(v[j],v[j])));
+    //         }
+    //         double normOfColumn = eNorm(v[k]);
+    //         for (int j = 0;j<dimension;++j) {
+    //             v[k][j] = v[k][j] / normOfColumn;
+    //         }
+    //     }
+    // }
+
+    for (int i = 0;i<dimension;i++) {
+        for (int j = 0; j < i; j++) {
+            v[i] = subtract(v[i], multiply(v[i], dotProduct(v[i], v[j]) / dotProduct(v[j],v[j])));
         }
-        for(int k = i + 1; k < dimension; ++k) {
-            r[i][k] = dotProduct(result[i], v[k]);
-            for (int j = 0;j < dimension;++j) {
-                v[k][j] = v[k][j] - (r[i][k] * result[i][j]);
-            }
+        double normOfColumn = eNorm(v[i]);
+        for (int z = 0;z<dimension;++z) {
+            v[i][z] = v[i][z] / normOfColumn;
         }
     }
     return v;
+}
+
+Matrix gramSchmidt2(Matrix& vectors) {
+    Matrix result = vectors;
+    for (int i = 0;i < vectors.size(); i++) {
+        Vector currentColumn = vectors[i];
+        for (int j = 0; j < i; j++) {
+            double x = dotProduct(vectors[j],vectors[i]);
+            currentColumn = subtract(currentColumn, multiply(result[j], x));
+        }
+        double z = eNorm(vectors[i]);
+        for (int y = 0; y < vectors.size();y++) {
+            result[i][y] = result[i][y] / z;
+        }
+    }
+    return result;
+}
+
+Matrix gs(Matrix& basis) {
+    Matrix result(basis.size());
+
+    for (int i = 0; i < basis.size(); i++) {
+        if (i == 0) {
+            
+        } else {
+
+        }
+    }
+
+    return result;
 }
 
 Matrix LLL(Matrix& basis, double delta) {
@@ -159,10 +214,9 @@ Matrix LLL(Matrix& basis, double delta) {
 
     while (index < basis_prime.size()) {
         cout << index << endl;
-        for (int j = index - 1; j > -1; j--) {
-                        // double mu = round(dotProduct(basis[index], basis_prime[j]) / dotProduct(basis_prime[j], basis_prime[j]));
-            double mu = round(dotProduct(basis[index], basis_prime[j]) / dotProduct(basis_prime[j], basis_prime[j]));
-            if (abs(mu) > 0) {
+        for (int j = index - 1; j >= 0; --j) {
+            double mu = dotProduct(basis[index], basis[j]);
+            if (abs(mu) > 0.5) {
                 basis[index] = subtract(basis[index], multiply(basis[j], mu));
                 basis_prime = gramSchmidt(basis);
             }
@@ -261,20 +315,52 @@ int main(int argc, char *argv[]) {
     // Ensures matrix is linearly independent
     // Matrix newMatrix = makeLinearlyIndependent(matrix);
 
+    // SUBTRACT works
+    // cout << "Test subtract: " << endl;
+    // Vector v1 = {2,2,2};
+    // Vector v2 = {1,1,1};
+    // Vector v3 = subtract(v1, v2);
+    // printVector(v3);
+
+    // MULTIPLY works
+    // cout << "Test multiply: " << endl;
+    // Vector v1 = {1,1,1};
+    // int scalar = 3;
+    // Vector v2 = multiply(v1, scalar);
+    // printVector(v2);
+
+    // Dot product works
+    // cout << "Test dot product: " << endl;
+    // Vector v1 = {2,7,1};
+    // Vector v2 = {8,2,8};
+    // double dp = dotProduct(v1, v2);
+    // cout << "DP = " << dp << endl;
+
+    // eNorm works
+    // cout << "ENORM test: " << endl;
+    // Vector v1 = {1,1,1,1};
+    // double n = eNorm(v1);
+    // cout << n << endl;
+
     // Applies gram-schmidt process to matrix
-    // Matrix newMatrix2 = gs2(matrix);
-    Matrix gM = gramSchmidt(matrix);
-    printMatrix(gM);
+    // Matrix newMatrix2 = gramSchmidt(matrix);
+    // Matrix gM = gramSchmidt2(matrix);
+    // printMatrix(newMatrix2);
+    // printMatrix(gM);
+    Matrix newMatrix = gs(matrix);
+    // Matrix gm2 = gram_schmidt(matrix);
+    // printMatrix(gm2);
     // Applies LLL algorithm to matrix
-    double delta = 0.5;
+    // double delta = 0.5;
     // LLL(newMatrix, delta);
 
     // LLL test below - need to sort first 
     // "[1,0,0,1345]" "[0,1,0,35]" "[0,0,1,154]" should be "[0,9,-2,7]" "[1,1,-9,-6]" "[1,-3,-8,8]"
-    Matrix newMatrix = LLL(gM, delta);
+    // Matrix newMatrix = LLL(gM, delta);
 
-    Vector shortest = Enumeration(newMatrix);
-    printVector(shortest);
+    // Vector shortest = Enumeration(newMatrix);
+    // printVector(shortest);
+    // cout << eNorm(shortest) << endl;
 
     // Prints new matrix as a result
     // printMatrix(gM);
