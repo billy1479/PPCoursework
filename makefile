@@ -1,6 +1,6 @@
 CXX = g++
 CXXFLAGS = -std=c++11 -Wall
-SRC = main.cc
+SRC = main2.cc
 TARGET = runme
 
 all: $(TARGET)

@@ -194,20 +194,27 @@ Matrix gramSchmidt2(Matrix& vectors) {
     return result;
 }
 
+// Dont touch this
 Matrix gs(Matrix& basis) {
-    Matrix result(basis.size());
+    Matrix result = basis;
 
-    for (int i = 0; i < basis.size(); i++) {
-        if (i == 0) {
-            
-        } else {
+    Vector v1 = basis[0];
+    v1 = normalize(v1);
+    result[0] = v1;
 
+    for (int i = 1; i < basis.size(); i++) {
+        Vector vn = basis[i];
+        for (int j = 0; j < i; j++) {
+            vn = subtract(vn, multiply(result[j], dotProduct(basis[i], result[j])));
         }
+        vn = normalize(vn);
+        result[i] = vn;
     }
 
     return result;
 }
 
+// Dont touch this
 Matrix LLL(Matrix& basis, double delta) {
     Matrix basis_prime = gramSchmidt(basis);
     int index = 1;
@@ -342,12 +349,19 @@ int main(int argc, char *argv[]) {
     // double n = eNorm(v1);
     // cout << n << endl;
 
+    // normalize 
+    // cout << "Normalise test: " << endl;
+    // Vector v1 = {1,1,1};
+    // Vector v2 = normalize(v1);
+    // printVector(v2);
+
     // Applies gram-schmidt process to matrix
     // Matrix newMatrix2 = gramSchmidt(matrix);
     // Matrix gM = gramSchmidt2(matrix);
     // printMatrix(newMatrix2);
     // printMatrix(gM);
     Matrix newMatrix = gs(matrix);
+    printMatrix(newMatrix);
     // Matrix gm2 = gram_schmidt(matrix);
     // printMatrix(gm2);
     // Applies LLL algorithm to matrix
@@ -358,9 +372,9 @@ int main(int argc, char *argv[]) {
     // "[1,0,0,1345]" "[0,1,0,35]" "[0,0,1,154]" should be "[0,9,-2,7]" "[1,1,-9,-6]" "[1,-3,-8,8]"
     // Matrix newMatrix = LLL(gM, delta);
 
-    // Vector shortest = Enumeration(newMatrix);
-    // printVector(shortest);
-    // cout << eNorm(shortest) << endl;
+    Vector shortest = Enumeration(newMatrix);
+    printVector(shortest);
+    cout << eNorm(shortest) << endl;
 
     // Prints new matrix as a result
     // printMatrix(gM);
