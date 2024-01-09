@@ -85,68 +85,30 @@ Vector combineVectors(const Vector& a, const Vector& b) {
     return result;
 }
 
-// Generates all possible vectors based off given basis
-Vector Enumeration(Matrix& basis) {
-    Vector shortest = basis[0];
+Matrix gramSchmidt(Matrix& basis) {
+    int i,j,k;
+    Matrix r(basis.size());
+    Matrix v(basis.size());
 
-    for (int i = 0; i <basis.size();i++){
-        for (int j = 0; j < basis.size(); j++) {
-            Vector n = combineVectors(basis[i], basis[j]);
-            if (eNorm(n) < eNorm(shortest)) {
-                shortest = n;
+    for (i = 0; i < basis.size(); i++) {
+        for (j = 0; j < basis.size(); j++) {
+            v[i][j] = basis[i][j];
+        }
+    }
+
+    for (i = 0; i < basis.size(); i++) {
+        r[i][i] = eNorm(v[i]);
+        for (j = 0; j < basis.size(); j++) {
+            basis[i][j] = v[i][j] / r[i][i];
+        }
+        for (k = i + 1; k < basis.size(); k++) {
+            r[i][k] = dotProduct(basis[i], v[k]);
+            for (j = 0; j < basis.size(); j++) {
+                v[k][j] = v[k][j] - r[i][k] * basis[i][j];
             }
         }
     }
-    return shortest;
-}
-
-Matrix enumumer(Matrix& basis, int limits) {
-    Matrix lattice;
-
-    for (int i = -limits; i <= limits; i++) {
-        for (int j = -limits; j <= limits; j++) {
-            Vector vec(basis.size(), 0.0);
-
-            for (size_t k = 0; k < vec.size(); k++) {
-                vec[k] = i * basis[0][k] + j * basis[1][k];
-            }
-            lattice.push_back(vec);
-        }
-    }
-    return lattice;
-}
-
-Vector shortestVector(Matrix& lattice) {
-    double minNorm = numeric_limits<double>::max();
-    Vector shortestVec;
-
-    for (const auto& vec : lattice) {
-        double currentNorm = eNorm(vec);
-        if (currentNorm < minNorm && currentNorm != 0) {
-            minNorm = currentNorm;
-            shortestVec = vec;
-        }
-    }
-    return shortestVec;
-}
-
-Matrix gs(Matrix& basis) {
-    Matrix result = basis;
-
-    Vector v1 = basis[0];
-    v1 = normalize(v1);
-    result[0] = v1;
-
-    for (int i = 1; i < basis.size(); i++) {
-        Vector vn = basis[i];
-        for (int j = 0; j < i; j++) {
-            vn = subtract(vn, multiply(result[j], dotProduct(basis[i], result[j])));
-        }
-        vn = normalize(vn);
-        result[i] = vn;
-    }
-
-    return result;
+    return v;
 }
 
 int main(int argc, char *argv[]) {
@@ -194,23 +156,13 @@ int main(int argc, char *argv[]) {
     }
     std::cout << "Dimension of matrix: " << dimension << std::endl;
 
-    // Generates all vectors in latice based off basis
-    Matrix newBasis = gs(matrix);
-
-    printMatrix(newBasis);
-
-    Matrix lattice = enumumer(newBasis, 100);
-
-    Vector x = shortestVector(lattice);
-    double shortestNorm = eNorm(x);
-    cout << "The norm of the shortest vector in the lattice is " << shortestNorm << endl;
-
-
+    Matrix x = gramSchmidt(matrix);
+    printMatrix(x);
     // Creates output file and writes euclidean norm of shortest vector to it
-    ofstream myfile;
-    myfile.open("result.txt");
-    myfile << shortestNorm;
-    myfile.close();
+    // ofstream myfile;
+    // myfile.open("result.txt");
+    // myfile << shortestNorm;
+    // myfile.close();
 
     // Ends program
     return 0;
