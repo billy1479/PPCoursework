@@ -170,10 +170,10 @@ Matrix gramSchmidt(const Matrix& vectors) {
         for (int j = 0; j < i; j++) {
             v[i] = subtract(v[i], multiply(v[i], dotProduct(v[i], v[j]) / dotProduct(v[j],v[j])));
         }
-        double normOfColumn = eNorm(v[i]);
-        for (int z = 0;z<dimension;++z) {
-            v[i][z] = v[i][z] / normOfColumn;
-        }
+        // double normOfColumn = eNorm(v[i]);
+        // for (int z = 0;z<dimension;++z) {
+        //     v[i][z] = v[i][z] / normOfColumn;
+        // }
     }
     return v;
 }
@@ -360,10 +360,10 @@ int main(int argc, char *argv[]) {
     // Matrix gM = gramSchmidt2(matrix);
     // printMatrix(newMatrix2);
     // printMatrix(gM);
-    Matrix newMatrix = gs(matrix);
-    printMatrix(newMatrix);
-    // Matrix gm2 = gram_schmidt(matrix);
-    // printMatrix(gm2);
+    // Matrix newMatrix = gs(matrix);
+    // printMatrix(newMatrix);
+    Matrix gm2 = gramSchmidt2(matrix);
+    printMatrix(gm2);
     // Applies LLL algorithm to matrix
     // double delta = 0.5;
     // LLL(newMatrix, delta);
@@ -372,9 +372,9 @@ int main(int argc, char *argv[]) {
     // "[1,0,0,1345]" "[0,1,0,35]" "[0,0,1,154]" should be "[0,9,-2,7]" "[1,1,-9,-6]" "[1,-3,-8,8]"
     // Matrix newMatrix = LLL(gM, delta);
 
-    Vector shortest = Enumeration(newMatrix);
-    printVector(shortest);
-    cout << eNorm(shortest) << endl;
+    // Vector shortest = Enumeration(newMatrix);
+    // printVector(shortest);
+    // cout << eNorm(shortest) << endl;
 
     // Prints new matrix as a result
     // printMatrix(gM);

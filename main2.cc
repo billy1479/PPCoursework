@@ -130,19 +130,21 @@ Vector shortestVector(Matrix& lattice) {
     return shortestVec;
 }
 
+// Vector projectionFunction(Vector& )
+
 Matrix gs(Matrix& basis) {
     Matrix result = basis;
 
     Vector v1 = basis[0];
-    v1 = normalize(v1);
+    // v1 = normalize(v1);
     result[0] = v1;
 
     for (int i = 1; i < basis.size(); i++) {
         Vector vn = basis[i];
-        for (int j = i; j < i; j++) {
-            vn = subtract(vn, multiply(result[j], dotProduct(basis[i], result[j])));
+        for (int j = 0; j < i; j++) {
+            vn = subtract(vn, multiply(result[j], dotProduct(basis[i], result[j]) / (eNorm(result[j]) * eNorm(result[j]))));
         }
-        vn = normalize(vn);
+        // vn = normalize(vn);
         result[i] = vn;
     }
 
@@ -151,6 +153,9 @@ Matrix gs(Matrix& basis) {
 
 // Kinda hopeless
 Matrix LLL(Matrix& basis) {
+    int dimension = basis.size();
+
+
     
 }
 
@@ -246,21 +251,25 @@ int main(int argc, char *argv[]) {
 
     // Matrix lattice = enumumer(newBasis, 10);
 
-    Matrix lattice = sieve(matrix,10);
+    // Matrix lattice = sieve(matrix,10);
 
-    Vector x = shortestVector(lattice);
-    double shortestNorm = eNorm(x);
-    cout << "The shortest vector is: " << endl;
-    printVector(x);
+    Matrix result = gs(matrix);
 
-    cout << "The norm of the shortest vector in the lattice is " << shortestNorm << endl;
+    printMatrix(result);
+
+    // Vector x = shortestVector(lattice);
+    // double shortestNorm = eNorm(x);
+    // cout << "The shortest vector is: " << endl;
+    // printVector(x);
+
+    // cout << "The norm of the shortest vector in the lattice is " << shortestNorm << endl;
 
 
     // Creates output file and writes euclidean norm of shortest vector to it
-    ofstream myfile;
-    myfile.open("result.txt");
-    myfile << shortestNorm;
-    myfile.close();
+    // ofstream myfile;
+    // myfile.open("result.txt");
+    // myfile << shortestNorm;
+    // myfile.close();
 
     // Ends program
     return 0;
