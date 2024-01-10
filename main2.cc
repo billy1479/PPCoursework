@@ -45,6 +45,14 @@ Vector subtract(const Vector& a, const Vector& b) {
     return result;
 }
 
+// Adds two vectors together
+Vector addVector(const Vector& a, const Vector& b) {
+    Vector result(a.size());
+    for (int i = 0; i < a.size(); i++)
+        result[i] = a[i] + b[i];
+    return result;
+}
+
 // Multiplies a vector and a scalar together
 Vector multiply(const Vector v, double scalar) {
     Vector result(v.size());
@@ -71,6 +79,14 @@ double eNorm(const Vector& v) {
     }
     return sqrt(sum);
 };
+
+double eNormSquared(const Vector& v) {
+    double sum = 0.0;
+    for (double x : v) {
+        sum += x * x;
+    }
+    return sum;
+}
 
 Vector normalize(const Vector& v) {
     double magnitude = sqrt(dotProduct(v, v));
@@ -132,6 +148,7 @@ Vector shortestVector(Matrix& lattice) {
 
 // Vector projectionFunction(Vector& )
 
+// Makes orthogonal basis
 Matrix gs(Matrix& basis) {
     Matrix result = basis;
 
@@ -147,16 +164,56 @@ Matrix gs(Matrix& basis) {
         // vn = normalize(vn);
         result[i] = vn;
     }
-
     return result;
 }
 
-// Kinda hopeless
-Matrix LLL(Matrix& basis) {
-    int dimension = basis.size();
+// makes orthonormal basis
+Matrix gs2(Matrix& basis) {
+    Matrix result = basis;
 
+    Vector v1 = basis[0];
+    v1 = normalize(v1);
+    result[0] = v1;
 
-    
+    for (int i = 1; i < basis.size(); i++) {
+        Vector vn = basis[i];
+        for (int j = 0; j < i; j++) {
+            vn = subtract(vn, multiply(result[j], dotProduct(basis[i], result[j]) / (eNorm(result[j]) * eNorm(result[j]))));
+        }
+        vn = normalize(vn);
+        result[i] = vn;
+    }
+    return result;
+}
+
+double u(Matrix& basis, Matrix& oBasis,int i, int k) {
+    return (dotProduct(basis[k], oBasis[i]) / dotProduct(basis[i], basis[i]));
+}
+
+Matrix step1ofLLL(Matrix& basis) {
+    Matrix oBasis = gs(basis);
+    for (int i = 0; i < basis.size(); ++i) {
+        cout << "i: " << i << endl;
+        for (int k = i - 1; k > -1; k--) {
+            cout << "k: " << k << endl; 
+            double m = round(u(basis, oBasis, i, k));
+            basis[i] = subtract(basis[i], multiply(basis[k], m));
+        }
+    }
+    return basis, oBasis;
+}
+
+Matrix LLL(Matrix& basis, float delta) {
+    Matrix newBasis, oBasis = step1ofLLL(basis);
+    for (int i = 0; i < newBasis.size() - 1; ++i) {
+        if (eNormSquared(addVector(oBasis[i + 1], multiply(oBasis[i], u(newBasis, oBasis, i, i + 1)))) < (0.75 * eNormSquared(oBasis[i]))) {
+            newBasis[i+1], newBasis[i] = newBasis[i], newBasis[i+1];
+            newBasis, oBasis = step1ofLLL(newBasis);
+            // cout << "This is running" << endl;
+        }
+        cout << "this part is running" << endl;
+    }
+    return basis;
 }
 
 Vector reduce(Vector& v, Matrix& basis) {
@@ -194,9 +251,6 @@ Matrix sieve(Matrix& basis, int maxIt) {
 
     return tempMatrix;
 }
-
-
-
 
 
 int main(int argc, char *argv[]) {
@@ -253,7 +307,7 @@ int main(int argc, char *argv[]) {
 
     // Matrix lattice = sieve(matrix,10);
 
-    Matrix result = gs(matrix);
+    Matrix result = LLL(matrix, 0.75);
 
     printMatrix(result);
 
