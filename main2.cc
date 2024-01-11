@@ -330,7 +330,7 @@ int main(int argc, char *argv[]) {
 
     // Matrix lattice = sieve(matrix,10);
 
-    Matrix result = LLL(matrix, 0.75);
+    Matrix result = LLL(matrix, 0.3);
 
     printMatrix(result);
 
