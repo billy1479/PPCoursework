@@ -11,6 +11,11 @@ using namespace std;
 using Vector = vector<long double>;
 using Matrix = vector<Vector>;
 
+struct lllreturn {
+    Matrix a;
+    Matrix b;
+};
+
 // This is baseline approach
 
 void printMatrix(Matrix& x) {
@@ -186,72 +191,90 @@ Matrix gs2(Matrix& basis) {
     return result;
 }
 
-double u(Matrix& basis, Matrix& oBasis,int i, int k) {
-    return (dotProduct(basis[k], oBasis[i]) / dotProduct(basis[i], basis[i]));
+double mu(Matrix& basis, Matrix& oBasis, int i, int j) {
+    return (dotProduct(basis[i], oBasis[j]) / dotProduct(oBasis[j], oBasis[j]));
 }
 
-Matrix step1ofLLL(Matrix& basis) {
+Matrix LLL(Matrix basis, double delta) {
     Matrix oBasis = gs(basis);
-    for (int i = 0; i < basis.size(); ++i) {
-        cout << "i: " << i << endl;
-        for (int k = i - 1; k > -1; k--) {
-            cout << "k: " << k << endl; 
-            double m = round(u(basis, oBasis, i, k));
-            basis[i] = subtract(basis[i], multiply(basis[k], m));
-        }
-    }
-    return basis, oBasis;
-}
 
-Matrix LLL(Matrix& basis, float delta) {
-    Matrix newBasis, oBasis = step1ofLLL(basis);
-    for (int i = 0; i < newBasis.size() - 1; ++i) {
-        if (eNormSquared(addVector(oBasis[i + 1], multiply(oBasis[i], u(newBasis, oBasis, i, i + 1)))) < (0.75 * eNormSquared(oBasis[i]))) {
-            newBasis[i+1], newBasis[i] = newBasis[i], newBasis[i+1];
-            newBasis, oBasis = step1ofLLL(newBasis);
-            // cout << "This is running" << endl;
+    int n = basis.size();
+    int k = 1;
+
+    while (k < n) {
+        for (int j = k - 1; j >= 0; --j) {
+            if (abs(mu(basis, oBasis, k, j)) > .5) {
+                basis[k] = subtract(basis[k], multiply(basis[j], round(mu(basis, oBasis,k,j))));
+                oBasis = gs(basis);
+            }
         }
-        cout << "this part is running" << endl;
+        
+        if (dotProduct(oBasis[k], oBasis[k]) >= ((delta - mu(basis, oBasis, k, k-1)*(delta - mu(basis, oBasis, k, k-1))*(dotProduct(oBasis[k-1], oBasis[k-1]))))) {
+            ++k;
+        } else {
+            basis[k], basis[k-1] = basis[k-1], basis[k];
+            oBasis = gs(basis);
+            k = max(k-1, 1);
+            cout << "This is running" << endl;
+        }
     }
     return basis;
 }
 
-Vector reduce(Vector& v, Matrix& basis) {
-    for (auto& l : basis) {
-        int counter = 0;
-        while (bool state = true and counter <= basis.size()) {
-            Vector difference = subtract(v, l);
-            cout << "run" << endl;
-            if (eNorm(difference) >= eNorm(v)) {
-                state = false;
-            }
-            v = difference;
-            counter++;
-        }
-    }
-    return v;
-}
+// READ ME!!!!
+// https://kel.bz/post/lll/
 
-// Maybe this is better
-Matrix sieve(Matrix& basis, int maxIt) {
-    Matrix tempMatrix;
-    int iterations = 0;
+// double u(Matrix& basis, Matrix& oBasis,int i, int k) {
+//     return (dotProduct(basis[k], oBasis[i]) / dotProduct(oBasis[i], oBasis[i]));
+// }
 
-    for (auto& x : basis) {
-        if (iterations >= maxIt) {
-            return tempMatrix;
-        }
-        x = reduce(x, basis);
-        if (eNorm(x) == 0) {
-        } else {
-            iterations++;
-            tempMatrix.push_back(x);
-        }
-    }
+// lllreturn step1ofLLL(Matrix& basis) {
+//     cout << "Step 1 started" << endl;
+//     Matrix oBasis = gs2(basis);
+//     cout << "OBasis at start of step 1";
+//     printMatrix(oBasis);
+//     for (int i = 0; i < basis.size(); ++i) {
+//         for (int k = i - 1; k >= 0; --k) {
+//             cout << "It's doing shit" << endl;
+//             double m = round(u(basis, oBasis, i, k));
+//             cout << m << endl;
+//             basis[i] = subtract(basis[i], multiply(basis[k], m));
+//         }
+//     }
+//     cout << "Basis:" << endl;
+//     printMatrix(basis);
+//     cout << "Obasis" << endl;
+//     printMatrix(oBasis);
+//     lllreturn returnFile;
+//     returnFile.a = basis;
+//     returnFile.b = oBasis;
+//     return returnFile;
+// }
 
-    return tempMatrix;
-}
+// Matrix LLL(Matrix& basis, float delta) {
+//     lllreturn r = step1ofLLL(basis);
+//     Matrix newBasis = r.a;
+//     printMatrix(newBasis);
+//     Matrix oBasis = r.b;
+//     printMatrix(oBasis);
+//     cout << "Next step has started" << endl;
+//     for (int i = 0; i < newBasis.size() - 1; ++i) {
+//         if (eNormSquared(addVector(oBasis[i + 1], multiply(oBasis[i], u(newBasis, oBasis, i, i + 1)))) < (0.75 * eNormSquared(oBasis[i]))) {
+//             // newBasis[i+1], newBasis[i] = newBasis[i], newBasis[i+1];
+//             cout << "Swapped" << endl;
+//             Vector temp = newBasis[i+1];
+//             newBasis[i+1] = newBasis[i];
+//             newBasis[i] = temp;
+//             r = step1ofLLL(newBasis);
+//             newBasis = r.a;
+//             oBasis = r.b;
+//             printMatrix(newBasis);
 
+//         }
+//         cout << "this part is running" << endl;
+//     }
+//     return newBasis;
+// }
 
 int main(int argc, char *argv[]) {
     // Take in arguments and format the vectors as vectors for the program
