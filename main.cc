@@ -5,65 +5,13 @@
 #include <cmath>
 #include <sstream>
 
-
 using namespace std;
 
 // Construct matrix for problem
 using Vector = vector<long double>;
 using Matrix = vector<Vector>;
 
-void fetchVectorLength(Matrix& x) {
-    Vector shortestVector = x[0];
-    int NoOfDimensions = x.size();
-
-    float shortestLength = 0.0;
-
-    for (int i = 0; i < NoOfDimensions; i++) {
-        shortestLength += shortestVector[i] * shortestVector[i];
-    };
-    
-    std::cout << "Shortest vector length: " << shortestLength << std::endl;
-};
-
-Matrix rref(Matrix& x) {
-    // performs row operations to convert matrix to row echelon form
-
-    // get rows and columns of matrix
-    int m = x.size(); // rows
-    int n = x[0].size(); // columns
-    int lead = 0; // for indexing
-
-    for (int r = 0; r < m; r++) {
-        if (lead >= n) {
-            return x;
-        };
-        int i = r;
-        while (x[i][lead] == 0) {
-            ++i;
-            if (i == m) {
-                i = r;
-                if(++lead == n) {
-                    return x;
-                }
-            }
-        };
-        std::swap(x[i],x[r]);
-        double lv = x[r][lead];
-
-        for (auto& mrx : x[r]) mrx /= lv;
-
-        for (i = 0; i < m; ++i) {
-            if (i != r) {
-                lv = x[i][lead];
-                for (int j = 0; j < n; ++j) {
-                    x[i][j] -= lv * x[r][j];
-                }
-            }
-        }
-        ++lead;
-    }
-    return x;
-};
+// This is baseline approach
 
 void printMatrix(Matrix& x) {
     std::cout << "The Matrix:" << std::endl;
@@ -97,6 +45,14 @@ Vector subtract(const Vector& a, const Vector& b) {
     return result;
 }
 
+// Adds two vectors together
+Vector addVector(const Vector& a, const Vector& b) {
+    Vector result(a.size());
+    for (int i = 0; i < a.size(); i++)
+        result[i] = a[i] + b[i];
+    return result;
+}
+
 // Multiplies a vector and a scalar together
 Vector multiply(const Vector v, double scalar) {
     Vector result(v.size());
@@ -124,6 +80,14 @@ double eNorm(const Vector& v) {
     return sqrt(sum);
 };
 
+double eNormSquared(const Vector& v) {
+    double sum = 0.0;
+    for (double x : v) {
+        sum += x * x;
+    }
+    return sum;
+}
+
 Vector normalize(const Vector& v) {
     double magnitude = sqrt(dotProduct(v, v));
     return multiply(v, 1.0 / magnitude);
@@ -137,65 +101,43 @@ Vector combineVectors(const Vector& a, const Vector& b) {
     return result;
 }
 
-Matrix gramSchmidt(const Matrix& vectors) {
-    Matrix result = vectors;
-    int dimension = vectors.size();
+Vector shortestVector(Matrix& lattice) {
+    double minNorm = numeric_limits<double>::max();
+    Vector shortestVec;
 
-    Matrix r(dimension, Vector(dimension));
-    Matrix v = vectors;
-
-    // for (int i = 0; i < dimension; ++i) {
-    //     // v[i][i] = round(eNorm(v[i]));
-    //     // for (int j = 0; j < dimension; ++j) {
-    //     //     if (v[i][i] == 0) {
-    //     //         cout << "Error - Division by zero (Linearly Dependent vectors)" << endl;
-    //     //     } else {
-    //     //         result[i][j] = v[i][j] / v[i][i];
-    //     //     }
-    //     // }
-    //     for(int k = i + 1; k < dimension; ++k) {
-    //         r[i][k] = dotProduct(result[i], v[k]);
-    //         for (int j = 0;j < k;++j) {
-    //             // v[k][j] = v[k][j] - (r[i][k] * result[i][j]);
-    //             v[k] = subtract(v[k], multiply(v[k], dotProduct(v[k], v[j]) / dotProduct(v[j],v[j])));
-    //         }
-    //         double normOfColumn = eNorm(v[k]);
-    //         for (int j = 0;j<dimension;++j) {
-    //             v[k][j] = v[k][j] / normOfColumn;
-    //         }
-    //     }
-    // }
-
-    for (int i = 0;i<dimension;i++) {
-        for (int j = 0; j < i; j++) {
-            v[i] = subtract(v[i], multiply(v[i], dotProduct(v[i], v[j]) / dotProduct(v[j],v[j])));
+    for (const auto& vec : lattice) {
+        double currentNorm = eNorm(vec);
+        if (currentNorm < minNorm && currentNorm != 0) {
+            minNorm = currentNorm;
+            shortestVec = vec;
         }
-        // double normOfColumn = eNorm(v[i]);
-        // for (int z = 0;z<dimension;++z) {
-        //     v[i][z] = v[i][z] / normOfColumn;
-        // }
     }
-    return v;
+    return shortestVec;
 }
 
-Matrix gramSchmidt2(Matrix& vectors) {
-    Matrix result = vectors;
-    for (int i = 0;i < vectors.size(); i++) {
-        Vector currentColumn = vectors[i];
+// Vector projectionFunction(Vector& )
+
+// Makes orthogonal basis
+Matrix gs(Matrix& basis) {
+    Matrix result = basis;
+
+    Vector v1 = basis[0];
+    // v1 = normalize(v1);
+    result[0] = v1;
+
+    for (int i = 1; i < basis.size(); i++) {
+        Vector vn = basis[i];
         for (int j = 0; j < i; j++) {
-            double x = dotProduct(vectors[j],vectors[i]);
-            currentColumn = subtract(currentColumn, multiply(result[j], x));
+            vn = subtract(vn, multiply(result[j], dotProduct(basis[i], result[j]) / (eNorm(result[j]) * eNorm(result[j]))));
         }
-        double z = eNorm(vectors[i]);
-        for (int y = 0; y < vectors.size();y++) {
-            result[i][y] = result[i][y] / z;
-        }
+        // vn = normalize(vn);
+        result[i] = vn;
     }
     return result;
 }
 
-// Dont touch this
-Matrix gs(Matrix& basis) {
+// makes orthonormal basis
+Matrix gs2(Matrix& basis) {
     Matrix result = basis;
 
     Vector v1 = basis[0];
@@ -205,73 +147,42 @@ Matrix gs(Matrix& basis) {
     for (int i = 1; i < basis.size(); i++) {
         Vector vn = basis[i];
         for (int j = 0; j < i; j++) {
-            vn = subtract(vn, multiply(result[j], dotProduct(basis[i], result[j])));
+            vn = subtract(vn, multiply(result[j], dotProduct(basis[i], result[j]) / (eNorm(result[j]) * eNorm(result[j]))));
         }
         vn = normalize(vn);
         result[i] = vn;
     }
-
     return result;
 }
 
-// Dont touch this
-Matrix LLL(Matrix& basis, double delta) {
-    Matrix basis_prime = gramSchmidt(basis);
-    int index = 1;
-
-    while (index < basis_prime.size()) {
-        cout << index << endl;
-        for (int j = index - 1; j >= 0; --j) {
-            double mu = dotProduct(basis[index], basis[j]);
-            if (abs(mu) > 0.5) {
-                basis[index] = subtract(basis[index], multiply(basis[j], mu));
-                basis_prime = gramSchmidt(basis);
-            }
-        }
-        if (eNorm(basis_prime[index]) >= (delta - pow((dotProduct(basis[index], basis_prime[index-1])),2) * eNorm(basis_prime[index-1]))) {
-            index += 1;
-        } else {
-            basis[index], basis[index-1] = basis[index-1], basis[index];
-            basis_prime = gramSchmidt(basis);
-            index = std::max(index-1, 1);            
-        }
-    }
-    return basis;
-};
-
-Matrix LLL2(Matrix& basis, double delta) {
-    Matrix result;
-
-
-    return result;
+double mu(Matrix& basis, Matrix& oBasis, int i, int j) {
+    return (dotProduct(basis[i], oBasis[j]) / dotProduct(oBasis[j], oBasis[j]));
 }
 
-// Generates all possible vectors based off given basis
-Vector Enumeration(Matrix& basis) {
-    Vector shortest = basis[0];
+Matrix LLL(Matrix basis, double delta) {
+    Matrix oBasis = gs(basis);
 
-    for (int i = 0; i <basis.size();i++){
-        for (int j = 0; j < basis.size(); j++) {
-            Vector n = combineVectors(basis[i], basis[j]);
-            if (eNorm(n) < eNorm(shortest)) {
-                shortest = n;
-            }
-        }
-    }
-    return shortest;
-}
-
-Matrix bkz(Matrix& basis) {
-    // Number of basis vectors given
     int n = basis.size();
-    Matrix basisPrime = LLL(basis, 0.75);
+    int k = 1;
 
-    for (int i = 0; i < n; i++) {
+    while (k < n) {
+        for (int j = k - 1; j >= 0; --j) {
+            if (abs(mu(basis, oBasis, k, j)) > 0.5) {
+                basis[k] = subtract(basis[k], multiply(basis[j], round(mu(basis, oBasis,k,j))));
+                oBasis = gs(basis);
+            }
+        }
         
+        if (dotProduct(oBasis[k], oBasis[k]) >= ((delta - abs(mu(basis, oBasis, k, k-1))*(delta - abs(mu(basis, oBasis, k, k-1)))*(dotProduct(oBasis[k-1], oBasis[k-1]))))) {
+            ++k;
+        } else {
+            basis[k], basis[k-1] = basis[k-1], basis[k];
+            oBasis = gs(basis);
+            k = max(k-1, 1);
+        }
     }
-
     return basis;
-};
+}
 
 int main(int argc, char *argv[]) {
     // Take in arguments and format the vectors as vectors for the program
@@ -316,71 +227,26 @@ int main(int argc, char *argv[]) {
             std::cerr << "The vectors given are an inconsistent number of dimensions" << std::endl;
         }        
     }
-
     std::cout << "Dimension of matrix: " << dimension << std::endl;
 
-    // Ensures matrix is linearly independent
-    // Matrix newMatrix = makeLinearlyIndependent(matrix);
+    Matrix result = LLL(matrix, 0.75);
 
-    // SUBTRACT works
-    // cout << "Test subtract: " << endl;
-    // Vector v1 = {2,2,2};
-    // Vector v2 = {1,1,1};
-    // Vector v3 = subtract(v1, v2);
-    // printVector(v3);
+    printMatrix(result);
 
-    // MULTIPLY works
-    // cout << "Test multiply: " << endl;
-    // Vector v1 = {1,1,1};
-    // int scalar = 3;
-    // Vector v2 = multiply(v1, scalar);
-    // printVector(v2);
+    Vector x = shortestVector(result);
+    double shortestNorm = eNorm(x);
+    cout << "The shortest vector is: " << endl;
+    printVector(x);
 
-    // Dot product works
-    // cout << "Test dot product: " << endl;
-    // Vector v1 = {2,7,1};
-    // Vector v2 = {8,2,8};
-    // double dp = dotProduct(v1, v2);
-    // cout << "DP = " << dp << endl;
+    cout << "The norm of the shortest vector in the lattice is " << shortestNorm << endl;
 
-    // eNorm works
-    // cout << "ENORM test: " << endl;
-    // Vector v1 = {1,1,1,1};
-    // double n = eNorm(v1);
-    // cout << n << endl;
 
-    // normalize 
-    // cout << "Normalise test: " << endl;
-    // Vector v1 = {1,1,1};
-    // Vector v2 = normalize(v1);
-    // printVector(v2);
+    // Creates output file and writes euclidean norm of shortest vector to it
+    ofstream myfile;
+    myfile.open("result.txt");
+    myfile << shortestNorm;
+    myfile.close();
 
-    // Applies gram-schmidt process to matrix
-    // Matrix newMatrix2 = gramSchmidt(matrix);
-    // Matrix gM = gramSchmidt2(matrix);
-    // printMatrix(newMatrix2);
-    // printMatrix(gM);
-    // Matrix newMatrix = gs(matrix);
-    // printMatrix(newMatrix);
-    Matrix gm2 = gramSchmidt2(matrix);
-    printMatrix(gm2);
-    // Applies LLL algorithm to matrix
-    // double delta = 0.5;
-    // LLL(newMatrix, delta);
-
-    // LLL test below - need to sort first 
-    // "[1,0,0,1345]" "[0,1,0,35]" "[0,0,1,154]" should be "[0,9,-2,7]" "[1,1,-9,-6]" "[1,-3,-8,8]"
-    // Matrix newMatrix = LLL(gM, delta);
-
-    // Vector shortest = Enumeration(newMatrix);
-    // printVector(shortest);
-    // cout << eNorm(shortest) << endl;
-
-    // Prints new matrix as a result
-    // printMatrix(gM);
-
-    // Outputs it to txt file
-    // to be done at the end
+    // Ends program
     return 0;
 }
-
