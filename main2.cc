@@ -203,78 +203,22 @@ Matrix LLL(Matrix basis, double delta) {
 
     while (k < n) {
         for (int j = k - 1; j >= 0; --j) {
-            if (abs(mu(basis, oBasis, k, j)) > .5) {
+            if (abs(mu(basis, oBasis, k, j)) > 0.5) {
                 basis[k] = subtract(basis[k], multiply(basis[j], round(mu(basis, oBasis,k,j))));
                 oBasis = gs(basis);
             }
         }
         
-        if (dotProduct(oBasis[k], oBasis[k]) >= ((delta - mu(basis, oBasis, k, k-1)*(delta - mu(basis, oBasis, k, k-1))*(dotProduct(oBasis[k-1], oBasis[k-1]))))) {
+        if (dotProduct(oBasis[k], oBasis[k]) >= ((delta - abs(mu(basis, oBasis, k, k-1))*(delta - abs(mu(basis, oBasis, k, k-1)))*(dotProduct(oBasis[k-1], oBasis[k-1]))))) {
             ++k;
         } else {
             basis[k], basis[k-1] = basis[k-1], basis[k];
             oBasis = gs(basis);
             k = max(k-1, 1);
-            cout << "This is running" << endl;
         }
     }
     return basis;
 }
-
-// READ ME!!!!
-// https://kel.bz/post/lll/
-
-// double u(Matrix& basis, Matrix& oBasis,int i, int k) {
-//     return (dotProduct(basis[k], oBasis[i]) / dotProduct(oBasis[i], oBasis[i]));
-// }
-
-// lllreturn step1ofLLL(Matrix& basis) {
-//     cout << "Step 1 started" << endl;
-//     Matrix oBasis = gs2(basis);
-//     cout << "OBasis at start of step 1";
-//     printMatrix(oBasis);
-//     for (int i = 0; i < basis.size(); ++i) {
-//         for (int k = i - 1; k >= 0; --k) {
-//             cout << "It's doing shit" << endl;
-//             double m = round(u(basis, oBasis, i, k));
-//             cout << m << endl;
-//             basis[i] = subtract(basis[i], multiply(basis[k], m));
-//         }
-//     }
-//     cout << "Basis:" << endl;
-//     printMatrix(basis);
-//     cout << "Obasis" << endl;
-//     printMatrix(oBasis);
-//     lllreturn returnFile;
-//     returnFile.a = basis;
-//     returnFile.b = oBasis;
-//     return returnFile;
-// }
-
-// Matrix LLL(Matrix& basis, float delta) {
-//     lllreturn r = step1ofLLL(basis);
-//     Matrix newBasis = r.a;
-//     printMatrix(newBasis);
-//     Matrix oBasis = r.b;
-//     printMatrix(oBasis);
-//     cout << "Next step has started" << endl;
-//     for (int i = 0; i < newBasis.size() - 1; ++i) {
-//         if (eNormSquared(addVector(oBasis[i + 1], multiply(oBasis[i], u(newBasis, oBasis, i, i + 1)))) < (0.75 * eNormSquared(oBasis[i]))) {
-//             // newBasis[i+1], newBasis[i] = newBasis[i], newBasis[i+1];
-//             cout << "Swapped" << endl;
-//             Vector temp = newBasis[i+1];
-//             newBasis[i+1] = newBasis[i];
-//             newBasis[i] = temp;
-//             r = step1ofLLL(newBasis);
-//             newBasis = r.a;
-//             oBasis = r.b;
-//             printMatrix(newBasis);
-
-//         }
-//         cout << "this part is running" << endl;
-//     }
-//     return newBasis;
-// }
 
 int main(int argc, char *argv[]) {
     // Take in arguments and format the vectors as vectors for the program
@@ -321,32 +265,23 @@ int main(int argc, char *argv[]) {
     }
     std::cout << "Dimension of matrix: " << dimension << std::endl;
 
-    // Generates all vectors in latice based off basis
-    // Matrix newBasis = gs(matrix);
-
-    // printMatrix(newBasis);
-
-    // Matrix lattice = enumumer(newBasis, 10);
-
-    // Matrix lattice = sieve(matrix,10);
-
-    Matrix result = LLL(matrix, 0.3);
+    Matrix result = LLL(matrix, 0.75);
 
     printMatrix(result);
 
-    // Vector x = shortestVector(lattice);
-    // double shortestNorm = eNorm(x);
-    // cout << "The shortest vector is: " << endl;
-    // printVector(x);
+    Vector x = shortestVector(result);
+    double shortestNorm = eNorm(x);
+    cout << "The shortest vector is: " << endl;
+    printVector(x);
 
-    // cout << "The norm of the shortest vector in the lattice is " << shortestNorm << endl;
+    cout << "The norm of the shortest vector in the lattice is " << shortestNorm << endl;
 
 
     // Creates output file and writes euclidean norm of shortest vector to it
-    // ofstream myfile;
-    // myfile.open("result.txt");
-    // myfile << shortestNorm;
-    // myfile.close();
+    ofstream myfile;
+    myfile.open("result.txt");
+    myfile << shortestNorm;
+    myfile.close();
 
     // Ends program
     return 0;
