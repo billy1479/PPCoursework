@@ -13,7 +13,7 @@ using Matrix = vector<Vector>;
 
 // This is baseline approach
 
-void printMatrix(Matrix& x) {
+void printMatrix(Matrix x) {
     std::cout << "The Matrix:" << std::endl;
     for (const auto &row : x) {
         for (const auto &elem : row) {
@@ -23,7 +23,7 @@ void printMatrix(Matrix& x) {
     }
 }
 
-void printVector(Vector& x) {
+void printVector(Vector x) {
     cout << "The Vector:" << endl;
     for (const auto &row : x) {
         cout << row << endl;
@@ -61,7 +61,7 @@ Vector multiply(const Vector v, double scalar) {
     return result;
 }
 
-Vector multiplyVectors(Vector& v, Vector& x) {
+Vector multiplyVectors(Vector v, Vector x) {
     Vector product(v.size());
 
     for (size_t i = 0; i < v.size(); ++i) {
@@ -78,7 +78,7 @@ double eNorm(const Vector& v) {
         sum += x * x;
     }
     return sqrt(sum);
-};
+}
 
 double eNormSquared(const Vector& v) {
     double sum = 0.0;
@@ -95,13 +95,13 @@ Vector normalize(const Vector& v) {
 
 Vector combineVectors(const Vector& a, const Vector& b) {
     Vector result(a.size());
-    for (int i = 0; i < a.size();i++) {
+    for (int i = 0; i < a.size(); i++) {
         result[i] = a[i] + b[i];
     }
     return result;
 }
 
-Vector shortestVector(Matrix& lattice) {
+Vector shortestVector(Matrix lattice) {
     double minNorm = numeric_limits<double>::max();
     Vector shortestVec;
 
@@ -118,7 +118,7 @@ Vector shortestVector(Matrix& lattice) {
 // Vector projectionFunction(Vector& )
 
 // Makes orthogonal basis
-Matrix gs(Matrix& basis) {
+Matrix gs(Matrix basis) {
     Matrix result = basis;
 
     Vector v1 = basis[0];
@@ -128,7 +128,9 @@ Matrix gs(Matrix& basis) {
     for (int i = 1; i < basis.size(); i++) {
         Vector vn = basis[i];
         for (int j = 0; j < i; j++) {
-            vn = subtract(vn, multiply(result[j], dotProduct(basis[i], result[j]) / (eNorm(result[j]) * eNorm(result[j]))));
+            double temp = (eNorm(result[j]) * eNorm(result[j]));
+            double temp2 = dotProduct(basis[i], result[j]);
+            vn = subtract(vn, multiply(result[j], temp2 / temp));
         }
         // vn = normalize(vn);
         result[i] = vn;
@@ -137,7 +139,7 @@ Matrix gs(Matrix& basis) {
 }
 
 // makes orthonormal basis
-Matrix gs2(Matrix& basis) {
+Matrix gs2(Matrix basis) {
     Matrix result = basis;
 
     Vector v1 = basis[0];
@@ -147,7 +149,9 @@ Matrix gs2(Matrix& basis) {
     for (int i = 1; i < basis.size(); i++) {
         Vector vn = basis[i];
         for (int j = 0; j < i; j++) {
-            vn = subtract(vn, multiply(result[j], dotProduct(basis[i], result[j]) / (eNorm(result[j]) * eNorm(result[j]))));
+            double temp = (eNorm(result[j]) * eNorm(result[j]));
+            double temp2 = dotProduct(basis[i], result[j]);
+            vn = subtract(vn, multiply(result[j], temp2 / temp));
         }
         vn = normalize(vn);
         result[i] = vn;
@@ -155,9 +159,21 @@ Matrix gs2(Matrix& basis) {
     return result;
 }
 
-double mu(Matrix& basis, Matrix& oBasis, int i, int j) {
+double mu(Matrix basis, Matrix oBasis, int i, int j) {
     return (dotProduct(basis[i], oBasis[j]) / dotProduct(oBasis[j], oBasis[j]));
 }
+
+// bool condition(Matrix basis, Matrix oBasis, double delta, int k) {
+//     double temp;
+//     temp = abs(mu(basis, oBasis, k, k-1));
+//     double temp2;
+//     temp2 = (dotProduct(oBasis[k-1], oBasis[k-1]));
+//     double temp3;
+//     temp3 = dotProduct(oBasis[k], oBasis[k])
+
+//     if (temp3 >= )
+    
+// }
 
 Matrix LLL(Matrix basis, double delta) {
     Matrix oBasis = gs(basis);
@@ -168,12 +184,14 @@ Matrix LLL(Matrix basis, double delta) {
     while (k < n) {
         for (int j = k - 1; j >= 0; --j) {
             if (abs(mu(basis, oBasis, k, j)) > 0.5) {
-                basis[k] = subtract(basis[k], multiply(basis[j], round(mu(basis, oBasis,k,j))));
+                double temp = round(mu(basis, oBasis, k, j));
+                Vector temp2 = multiply(basis[j], temp);
+                basis[k] = subtract(basis[k], temp2);
                 oBasis = gs(basis);
             }
         }
-        
-        if (dotProduct(oBasis[k], oBasis[k]) >= ((delta - abs(mu(basis, oBasis, k, k-1))*(delta - abs(mu(basis, oBasis, k, k-1)))*(dotProduct(oBasis[k-1], oBasis[k-1]))))) {
+        // if (dotProduct(oBasis[k], oBasis[k]) >= ((delta - abs(mu(basis, oBasis, k, k-1))*(delta - abs(mu(basis, oBasis, k, k-1)))*(dotProduct(oBasis[k-1], oBasis[k-1]))))) {
+        if (dotProduct(oBasis[k], oBasis[k]) >= ((delta - (abs(mu(basis, oBasis, k, k-1))*(abs(mu(basis, oBasis, k, k-1))))*(dotProduct(oBasis[k-1], oBasis[k-1]))))) {
             ++k;
         } else {
             basis[k], basis[k-1] = basis[k-1], basis[k];
@@ -185,10 +203,6 @@ Matrix LLL(Matrix basis, double delta) {
 }
 
 int main(int argc, char *argv[]) {
-    // Take in arguments and format the vectors as vectors for the program
-    // Reads input variables, parses them and stores them in the vectors array
-
-    // Sets a variable for dimension of vectors, to see if they differ as this will be an invalid input
     int dimension;
     dimension = 0;
 
@@ -211,23 +225,26 @@ int main(int argc, char *argv[]) {
                 dimension += 1;
                 currentInputvalues.push_back(num);
                 ss.ignore(1);
-            };
+            }
         } else {
             while (ss >> num) {
                 tempDimension += 1;
                 currentInputvalues.push_back(num);
                 ss.ignore(1);
-            };
-        };
+            }
+        }
 
-        // Checks if the current vector matches the dimensions of others and if not it errors out
+        // Checks if the current vector matches
+        // the dimensions of others and if not it errors out
         if (tempDimension == dimension || tempDimension == 0) {
             matrix.push_back(currentInputvalues);
         } else {
-            std::cerr << "The vectors given are an inconsistent number of dimensions" << std::endl;
-        }        
+            cerr << "Inconsistent number of dimensions" << endl;
+        }
     }
     std::cout << "Dimension of matrix: " << dimension << std::endl;
+
+    ofstream myfile("./result.txt");
 
     Matrix result = LLL(matrix, 0.75);
 
@@ -235,15 +252,9 @@ int main(int argc, char *argv[]) {
 
     Vector x = shortestVector(result);
     double shortestNorm = eNorm(x);
-    cout << "The shortest vector is: " << endl;
     printVector(x);
 
-    cout << "The norm of the shortest vector in the lattice is " << shortestNorm << endl;
-
-
     // Creates output file and writes euclidean norm of shortest vector to it
-    ofstream myfile;
-    myfile.open("result.txt");
     myfile << shortestNorm;
     myfile.close();
 
