@@ -210,10 +210,10 @@ int main(int argc, char *argv[]) {
 
     Matrix matrix;
     for (int i = 1; i < argc; ++i) {
-        std::cout << "Argument " << i << ": " << argv[i] << std::endl;
+        cout << "Argument " << i << ": " << argv[i] << std::endl;
         Vector currentInputvalues;
-        std::string currentValue = argv[i];
-        std::stringstream ss(currentValue);
+        string currentValue = argv[i];
+        stringstream ss(currentValue);
 
         // ignores the [
         ss.ignore(1);
@@ -244,7 +244,7 @@ int main(int argc, char *argv[]) {
             cerr << "Inconsistent number of dimensions" << endl;
         }
     }
-    std::cout << "Dimension of matrix: " << dimension << std::endl;
+    cout << "Dimension of matrix: " << dimension << endl;
 
     ofstream myfile("./result.txt");
 
