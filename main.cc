@@ -194,8 +194,6 @@ Matrix LLL(Matrix basis, double delta) {
                 oBasis = gs(basis);
             }
         }
-        // if (dotProduct(oBasis[k], oBasis[k]) >= ((delta - abs(mu(basis, oBasis, k, k-1))*(delta - abs(mu(basis, oBasis, k, k-1)))*(dotProduct(oBasis[k-1], oBasis[k-1]))))) {
-        // if (dotProduct(oBasis[k], oBasis[k]) >= ((delta - (abs(mu(basis, oBasis, k, k-1))*(abs(mu(basis, oBasis, k, k-1))))*(dotProduct(oBasis[k-1], oBasis[k-1]))))) {
         if (condition(basis, oBasis, delta, k)) {
             ++k;
         } else {
