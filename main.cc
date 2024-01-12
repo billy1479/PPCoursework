@@ -163,17 +163,21 @@ double mu(Matrix basis, Matrix oBasis, int i, int j) {
     return (dotProduct(basis[i], oBasis[j]) / dotProduct(oBasis[j], oBasis[j]));
 }
 
-// bool condition(Matrix basis, Matrix oBasis, double delta, int k) {
-//     double temp;
-//     temp = abs(mu(basis, oBasis, k, k-1));
-//     double temp2;
-//     temp2 = (dotProduct(oBasis[k-1], oBasis[k-1]));
-//     double temp3;
-//     temp3 = dotProduct(oBasis[k], oBasis[k])
+bool condition(Matrix basis, Matrix oBasis, double delta, int k) {
+    double temp;
+    temp = abs(mu(basis, oBasis, k, k-1)) * abs(mu(basis, oBasis, k, k-1));
+    double temp2;
+    temp2 = (dotProduct(oBasis[k-1], oBasis[k-1]));
+    double temp3;
+    temp3 = dotProduct(oBasis[k], oBasis[k]);
 
-//     if (temp3 >= )
+    if (temp3 >= (delta - temp * temp2)) {
+        return true;
+    } else {
+        return false;
+    }
     
-// }
+}
 
 Matrix LLL(Matrix basis, double delta) {
     Matrix oBasis = gs(basis);
@@ -191,7 +195,8 @@ Matrix LLL(Matrix basis, double delta) {
             }
         }
         // if (dotProduct(oBasis[k], oBasis[k]) >= ((delta - abs(mu(basis, oBasis, k, k-1))*(delta - abs(mu(basis, oBasis, k, k-1)))*(dotProduct(oBasis[k-1], oBasis[k-1]))))) {
-        if (dotProduct(oBasis[k], oBasis[k]) >= ((delta - (abs(mu(basis, oBasis, k, k-1))*(abs(mu(basis, oBasis, k, k-1))))*(dotProduct(oBasis[k-1], oBasis[k-1]))))) {
+        // if (dotProduct(oBasis[k], oBasis[k]) >= ((delta - (abs(mu(basis, oBasis, k, k-1))*(abs(mu(basis, oBasis, k, k-1))))*(dotProduct(oBasis[k-1], oBasis[k-1]))))) {
+        if (condition(basis, oBasis, delta, k)) {
             ++k;
         } else {
             basis[k], basis[k-1] = basis[k-1], basis[k];
