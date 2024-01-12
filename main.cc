@@ -176,7 +176,6 @@ bool condition(Matrix basis, Matrix oBasis, double delta, int k) {
     } else {
         return false;
     }
-    
 }
 
 Matrix LLL(Matrix basis, double delta) {
