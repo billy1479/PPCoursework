@@ -11,11 +11,6 @@ using namespace std;
 using Vector = vector<long double>;
 using Matrix = vector<Vector>;
 
-struct lllreturn {
-    Matrix a;
-    Matrix b;
-};
-
 // This is baseline approach
 
 void printMatrix(Matrix& x) {
@@ -104,37 +99,6 @@ Vector combineVectors(const Vector& a, const Vector& b) {
         result[i] = a[i] + b[i];
     }
     return result;
-}
-
-// Generates all possible vectors based off given basis
-Vector Enumeration(Matrix& basis) {
-    Vector shortest = basis[0];
-
-    for (int i = 0; i <basis.size();i++){
-        for (int j = 0; j < basis.size(); j++) {
-            Vector n = combineVectors(basis[i], basis[j]);
-            if (eNorm(n) < eNorm(shortest)) {
-                shortest = n;
-            }
-        }
-    }
-    return shortest;
-}
-
-Matrix enumumer(Matrix& basis, int limits) {
-    Matrix lattice;
-
-    for (int i = -limits; i <= limits; i++) {
-        for (int j = -limits; j <= limits; j++) {
-            Vector vec(basis.size(), 0.0);
-
-            for (size_t k = 0; k < vec.size(); k++) {
-                vec[k] = i * basis[0][k] + j * basis[1][k];
-            }
-            lattice.push_back(vec);
-        }
-    }
-    return lattice;
 }
 
 Vector shortestVector(Matrix& lattice) {
