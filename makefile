@@ -2,9 +2,7 @@ CXX = g++
 CXXFLAGS = -std=c++11 -Wall
 SRC = main.cc
 TARGET = runme
-TESTVARIABLE1 = "[1,0,0]"
-TESTVARIABLE2 = "[0,1,0]"
-TESTVARIABLE3 = "[0,0,1]"
+TESTVARIABLE1 = [1.0 0.0 0.0] [0.0 1.0 0.0] [0.0 0.0 1.0]
 
 all: $(TARGET)
 
@@ -13,6 +11,7 @@ $(TARGET): $(SRC)
 
 clean:
 	rm -f $(TARGET)
+	rm -f result.txt
 
 test: 
-	./$(TARGET) $(TESTVARIABLE1) $(TESTVARIABLE2) $(TESTVARIABLE3)
+	./$(TARGET) $(TESTVARIABLE1)
