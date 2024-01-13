@@ -204,47 +204,8 @@ Matrix LLL(Matrix basis, double delta) {
     return basis;
 }
 
-int main(int argc, char *argv[]) {
-    // int dimension;
-    // dimension = 0;
-
-    // Matrix matrix;
-    // for (int i = 1; i < argc; ++i) {
-    //     cout << "Argument " << i << ": " << argv[i] << std::endl;
-    //     Vector currentInputvalues;
-    //     string currentValue = argv[i];
-    //     stringstream ss(currentValue);
-
-    //     // ignores the [
-    //     ss.ignore(1);
-
-    //     int tempDimension;
-    //     tempDimension = 0;
-    //     int num;
-
-    //     if (dimension == 0) {
-    //         while (ss >> num) {
-    //             dimension += 1;
-    //             currentInputvalues.push_back(num);
-    //             ss.ignore(1);
-    //         }
-    //     } else {
-    //         while (ss >> num) {
-    //             tempDimension += 1;
-    //             currentInputvalues.push_back(num);
-    //             ss.ignore(1);
-    //         }
-    //     }
-
-    //     // Checks if the current vector matches
-    //     // the dimensions of others and if not it errors out
-    //     if (tempDimension == dimension || tempDimension == 0) {
-    //         matrix.push_back(currentInputvalues);
-    //     } else {
-    //         cerr << "Inconsistent number of dimensions" << endl;
-    //     }
-    // }
-
+int main(int argc, char* argv[]) {
+    
     int NoOfVectors = sqrt(argc - 1);
 
     if (NoOfVectors * NoOfVectors != argc-1) {
@@ -270,6 +231,7 @@ int main(int argc, char *argv[]) {
         }
         basis.push_back(nbasis);
     }
+    printMatrix(basis);
     // cout << "Dimension of matrix: " << dimension << endl;
 
     ofstream myfile("./result.txt");
