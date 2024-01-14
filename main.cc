@@ -4,6 +4,7 @@
 #include <string>
 #include <cmath>
 #include <sstream>
+#include <random>
 
 using namespace std;
 
@@ -204,47 +205,21 @@ Matrix LLL(Matrix basis, double delta) {
     return basis;
 }
 
+Vector enumerate(Matrix basis, Vector shortest) {
+    for (int i = 0; i < basis.size(); ++i) {
+        double temp = abs(eNorm(addVector(shortest,basis[i])));
+        if ((temp < eNorm(shortest)) and temp != 0) {
+            shortest = addVector(shortest, basis[i]);
+        }
+        temp = abs(eNorm(subtract(shortest, basis[i])));
+        if ((temp < eNorm(shortest)) and temp != 0) {
+            shortest = subtract(shortest, basis[i]);
+        }
+    }
+    return shortest;
+}
+
 int main(int argc, char *argv[]) {
-    // int dimension;
-    // dimension = 0;
-
-    // Matrix matrix;
-    // for (int i = 1; i < argc; ++i) {
-    //     cout << "Argument " << i << ": " << argv[i] << std::endl;
-    //     Vector currentInputvalues;
-    //     string currentValue = argv[i];
-    //     stringstream ss(currentValue);
-
-    //     // ignores the [
-    //     ss.ignore(1);
-
-    //     int tempDimension;
-    //     tempDimension = 0;
-    //     int num;
-
-    //     if (dimension == 0) {
-    //         while (ss >> num) {
-    //             dimension += 1;
-    //             currentInputvalues.push_back(num);
-    //             ss.ignore(1);
-    //         }
-    //     } else {
-    //         while (ss >> num) {
-    //             tempDimension += 1;
-    //             currentInputvalues.push_back(num);
-    //             ss.ignore(1);
-    //         }
-    //     }
-
-    //     // Checks if the current vector matches
-    //     // the dimensions of others and if not it errors out
-    //     if (tempDimension == dimension || tempDimension == 0) {
-    //         matrix.push_back(currentInputvalues);
-    //     } else {
-    //         cerr << "Inconsistent number of dimensions" << endl;
-    //     }
-    // }
-
     int NoOfVectors = sqrt(argc - 1);
 
     if (NoOfVectors * NoOfVectors != argc-1) {
@@ -273,14 +248,19 @@ int main(int argc, char *argv[]) {
     // cout << "Dimension of matrix: " << dimension << endl;
 
     ofstream myfile("./result.txt");
-
     Matrix result = LLL(basis, 0.75);
-
     printMatrix(result);
 
+    // Takes note of shortest vector from LLL reduced basis
+    cout << "Shortest Vector after LLL" << endl;
     Vector x = shortestVector(result);
     double shortestNorm = eNorm(x);
     printVector(x);
+
+    // Enumerates lattice around LLL-reduced basis to see if any other vectors are shorter than one in the basis
+    cout << "Shortest vector after enumeration" << endl;
+    Vector y = enumerate(result, x);
+    printVector(y);
 
     // Creates output file and writes euclidean norm of shortest vector to it
     myfile << shortestNorm;
