@@ -4,16 +4,21 @@
 #include <string>
 #include <cmath>
 #include <sstream>
-#include <random>
+#include <chrono>
+#include <sys/time.h>
+#include <sys/resource.h>
+
 
 using namespace std;
+using namespace std::chrono;
 
 // Construct matrix for problem
 using Vector = vector<long double>;
 using Matrix = vector<Vector>;
 
-// This is baseline approach
 
+
+// Outputs matrix
 void printMatrix(Matrix x) {
     std::cout << "The Matrix:" << std::endl;
     for (const auto &row : x) {
@@ -24,6 +29,7 @@ void printMatrix(Matrix x) {
     }
 }
 
+// Outputs a vector
 void printVector(Vector x) {
     cout << "The Vector:" << endl;
     for (const auto &row : x) {
@@ -31,6 +37,7 @@ void printVector(Vector x) {
     }
 }
 
+// Returns the dot product of two given vectors
 double dotProduct(const Vector& a, const Vector& b) {
     double product = 0.0;
     for (int i = 0; i < a.size(); i++)
@@ -38,7 +45,7 @@ double dotProduct(const Vector& a, const Vector& b) {
     return product;
 }
 
-// Subtracts two vectors from each other
+// Subtracts two vectors from each other and returns it
 Vector subtract(const Vector& a, const Vector& b) {
     Vector result(a.size());
     for (int i = 0; i < a.size(); i++)
@@ -46,7 +53,7 @@ Vector subtract(const Vector& a, const Vector& b) {
     return result;
 }
 
-// Adds two vectors together
+// Adds two vectors together and returns it
 Vector addVector(const Vector& a, const Vector& b) {
     Vector result(a.size());
     for (int i = 0; i < a.size(); i++)
@@ -54,7 +61,7 @@ Vector addVector(const Vector& a, const Vector& b) {
     return result;
 }
 
-// Multiplies a vector and a scalar together
+// Multiplies a vector and a scalar together and returns it
 Vector multiply(const Vector v, double scalar) {
     Vector result(v.size());
     for (int i = 0; i < v.size(); i++)
@@ -62,6 +69,7 @@ Vector multiply(const Vector v, double scalar) {
     return result;
 }
 
+// Multiplies two vectors together and returns the vector
 Vector multiplyVectors(Vector v, Vector x) {
     Vector product(v.size());
 
@@ -81,6 +89,7 @@ double eNorm(const Vector& v) {
     return sqrt(sum);
 }
 
+// Returns the euclidian norm squared of a given vector
 double eNormSquared(const Vector& v) {
     double sum = 0.0;
     for (double x : v) {
@@ -89,19 +98,14 @@ double eNormSquared(const Vector& v) {
     return sum;
 }
 
+// Normalises a given vector
 Vector normalize(const Vector& v) {
     double magnitude = sqrt(dotProduct(v, v));
     return multiply(v, 1.0 / magnitude);
 }
 
-Vector combineVectors(const Vector& a, const Vector& b) {
-    Vector result(a.size());
-    for (int i = 0; i < a.size(); i++) {
-        result[i] = a[i] + b[i];
-    }
-    return result;
-}
-
+// Loops through given lattice vectors 
+// and returns the vector with the shortest euclidean norm
 Vector shortestVector(Matrix lattice) {
     double minNorm = numeric_limits<double>::max();
     Vector shortestVec;
@@ -116,9 +120,8 @@ Vector shortestVector(Matrix lattice) {
     return shortestVec;
 }
 
-// Vector projectionFunction(Vector& )
-
-// Makes orthogonal basis
+// Makes orthogonal basis via 
+// the gram-schmdit process (used in LLL)
 Matrix gs(Matrix basis) {
     Matrix result = basis;
 
@@ -126,42 +129,26 @@ Matrix gs(Matrix basis) {
     // v1 = normalize(v1);
     result[0] = v1;
 
-    for (int i = 1; i < basis.size(); i++) {
+    for (int i = 1; i < basis.size(); ++i) {
         Vector vn = basis[i];
-        for (int j = 0; j < i; j++) {
+        for (int j = 0; j < i; ++j) {
             double temp = (eNorm(result[j]) * eNorm(result[j]));
             double temp2 = dotProduct(basis[i], result[j]);
             vn = subtract(vn, multiply(result[j], temp2 / temp));
         }
-        // vn = normalize(vn);
         result[i] = vn;
     }
     return result;
 }
 
-// makes orthonormal basis
-Matrix gs2(Matrix basis) {
-    Matrix result = basis;
-
-    Vector v1 = basis[0];
-    v1 = normalize(v1);
-    result[0] = v1;
-
-    for (int i = 1; i < basis.size(); i++) {
-        Vector vn = basis[i];
-        for (int j = 0; j < i; j++) {
-            double temp = (eNorm(result[j]) * eNorm(result[j]));
-            double temp2 = dotProduct(basis[i], result[j]);
-            vn = subtract(vn, multiply(result[j], temp2 / temp));
-        }
-        vn = normalize(vn);
-        result[i] = vn;
-    }
-    return result;
-}
-
+// Used in the LLL algorithm as part of _________
 double mu(Matrix basis, Matrix oBasis, int i, int j) {
-    return (dotProduct(basis[i], oBasis[j]) / dotProduct(oBasis[j], oBasis[j]));
+    if (dotProduct(oBasis[j], oBasis[j]) == 0) {
+        cerr << "Division by zero error" << endl; 
+        exit(EXIT_FAILURE);
+    } else {
+        return (dotProduct(basis[i], oBasis[j]) / dotProduct(oBasis[j], oBasis[j]));
+    }
 }
 
 bool condition(Matrix basis, Matrix oBasis, double delta, int k) {
@@ -179,6 +166,7 @@ bool condition(Matrix basis, Matrix oBasis, double delta, int k) {
     }
 }
 
+// LLL algorithm for lattice reduction
 Matrix LLL(Matrix basis, double delta) {
     Matrix oBasis = gs(basis);
 
@@ -205,6 +193,8 @@ Matrix LLL(Matrix basis, double delta) {
     return basis;
 }
 
+// Simple enumeration algorithm that
+//  is bound by the current known shortest vector
 Vector enumerate(Matrix basis, Vector shortest) {
     for (int i = 0; i < basis.size(); ++i) {
         double temp = abs(eNorm(addVector(shortest,basis[i])));
@@ -219,7 +209,12 @@ Vector enumerate(Matrix basis, Vector shortest) {
     return shortest;
 }
 
+// Main algorithm
 int main(int argc, char *argv[]) {
+    // For memory usage
+    struct rusage usage;
+    getrusage(RUSAGE_SELF, &usage);
+    
     int NoOfVectors = sqrt(argc - 1);
 
     if (NoOfVectors * NoOfVectors != argc-1) {
@@ -245,9 +240,14 @@ int main(int argc, char *argv[]) {
         }
         basis.push_back(nbasis);
     }
-    // cout << "Dimension of matrix: " << dimension << endl;
 
+    // Creates text file where output goes
     ofstream myfile("./result.txt");
+
+    // Sets start time
+    auto startTime = high_resolution_clock().now();
+
+    // Calls LLL on input basis
     Matrix result = LLL(basis, 0.75);
     printMatrix(result);
 
@@ -262,7 +262,14 @@ int main(int argc, char *argv[]) {
     Vector y = enumerate(result, x);
     printVector(y);
 
-    // Creates output file and writes euclidean norm of shortest vector to it
+    // Records end time
+    auto endTime = high_resolution_clock().now();
+
+    // Outputs running time of algorithm
+    auto duration = duration_cast<microseconds>(endTime - startTime);
+    cout << "Run-time for given basis: " << duration.count() << endl;
+
+    // Writes euclidean norm of shortest vector to text file
     myfile << shortestNorm;
     myfile.close();
 
