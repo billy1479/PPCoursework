@@ -4,6 +4,10 @@
 #include <string>
 #include <cmath>
 #include <sstream>
+#include <cctype>
+#include <cstdlib>
+#include <algorithm>
+#include <limits>
 // #include <chrono>
 // #include <sys/time.h>
 // #include <sys/resource.h>
@@ -240,7 +244,7 @@ double Determinant(Matrix basis) {
 }
 
 // Main algorithm
-int main(int argc, char *argv[]) {
+int main(int argc, char* argv[]) {
     // For memory usage
     // struct rusage usage;
     // getrusage(RUSAGE_SELF, &usage);
@@ -251,10 +255,13 @@ int main(int argc, char *argv[]) {
         cerr << "Incorrect number of arguments." << endl;
         exit(EXIT_FAILURE);
     }
+
+    // Matrix basis = readArguments(argc, argv, NoOfVectors);
+
     Matrix basis;
 
     for (int vec = 1; vec < argc; vec += NoOfVectors) {
-        Vector nbasis;
+        Vector currentVector;
         cout << "Vector:" << endl;
         for (int x = 0; x < NoOfVectors; ++x) {
             string arg = argv[vec+x];
@@ -262,13 +269,14 @@ int main(int argc, char *argv[]) {
             arg.erase(remove(arg.begin(), arg.end(), ']'), arg.end());
             cout << arg << endl;
             try {
-                nbasis.push_back(stof(arg));
+                currentVector.push_back(stof(arg));
             } catch (exception& e) {
                 cerr << "Incorrect vector numbers" << endl;
             }
         }
-        basis.push_back(nbasis);
+        basis.push_back(currentVector);
     }
+    printMatrix(basis);
 
     // // Sets start time
     // auto startTime = high_resolution_clock().now();
@@ -285,7 +293,8 @@ int main(int argc, char *argv[]) {
 
     // // Enumerates lattice around LLL-reduced basis to see if any other vectors are shorter than one in the basis
     // cout << "Shortest vector after enumeration" << endl;
-    Vector y = enumerate(result, x);
+    x = enumerate(result, x);
+    shortestNorm = eNorm(x);
     // printVector(y);
 
     // // Records end time
