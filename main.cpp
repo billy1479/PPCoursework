@@ -3,18 +3,14 @@
 #include <vector>
 #include <string>
 #include <cmath>
-#include <sstream>
-#include <cctype>
-#include <cstdlib>
 #include <algorithm>
 #include <limits>
-// #include <chrono>
-// #include <sys/time.h>
-// #include <sys/resource.h>
-
+#include <chrono>
+#include <sys/time.h>
+#include <sys/resource.h>
 
 using namespace std;
-// using namespace std::chrono;
+using namespace std::chrono;
 
 // Construct matrix for problem
 using Vector = vector<double>;
@@ -101,14 +97,14 @@ double eNormSquared(const Vector& v) {
 }
 
 // Normalises a given vector
-Vector normalize(const Vector & v) {
+Vector normalize(const Vector &v) {
     double magnitude = sqrt(dotProduct(v, v));
     return multiply(v, 1.0 / magnitude);
 }
 
-// Loops through given lattice vectors 
+// Loops through given lattice vectors
 // and returns the vector with the shortest euclidean norm
-Vector shortestVector(Matrix & lattice) {
+Vector shortestVector(Matrix lattice) {
     double minNorm = numeric_limits<double>::max();
     Vector shortestVec;
 
@@ -122,13 +118,12 @@ Vector shortestVector(Matrix & lattice) {
     return shortestVec;
 }
 
-// Makes orthogonal basis via 
+// Makes orthogonal basis via
 // the gram-schmdit process (used in LLL)
-Matrix gs(Matrix & basis) {
+Matrix gs(Matrix &basis) {
     Matrix result = basis;
 
     Vector v1 = basis[0];
-    // v1 = normalize(v1);
     result[0] = v1;
 
     for (int i = 1; i < basis.size(); ++i) {
@@ -145,11 +140,12 @@ Matrix gs(Matrix & basis) {
 
 // Used in the LLL algorithm as part of _________
 double mu(Matrix & basis, Matrix & oBasis, int i, int j) {
-    if (dotProduct(oBasis[j], oBasis[j]) == 0) {
-        cerr << "Division by zero error" << endl; 
+    float dp = dotProduct(oBasis[j], oBasis[j]);
+    if (dp == 0) {
+        cerr << "Division by zero error" << endl;
         exit(EXIT_FAILURE);
     } else {
-        return (dotProduct(basis[i], oBasis[j]) / dotProduct(oBasis[j], oBasis[j]));
+        return (dotProduct(basis[i], oBasis[j]) / dp);
     }
 }
 
@@ -197,14 +193,14 @@ Matrix LLL(Matrix& basis, double delta) {
 
 // Simple enumeration algorithm that
 // is bound by the current known shortest vector
-Vector enumerate(Matrix& basis, Vector shortest) {
+Vector enumerate(const Matrix& basis, Vector shortest) {
     for (int i = 0; i < basis.size(); ++i) {
-        double temp = abs(eNorm(addVector(shortest,basis[i])));
-        if ((temp < eNorm(shortest)) and temp != 0) {
+        double temp = abs(eNorm(addVector(shortest, basis[i])));
+        if ((temp < eNorm(shortest)) && temp != 0) {
             shortest = addVector(shortest, basis[i]);
         }
         temp = abs(eNorm(subtract(shortest, basis[i])));
-        if ((temp < eNorm(shortest)) and temp != 0) {
+        if ((temp < eNorm(shortest)) && temp != 0) {
             shortest = subtract(shortest, basis[i]);
         }
     }
@@ -213,42 +209,37 @@ Vector enumerate(Matrix& basis, Vector shortest) {
 
 // LU decomposition and then followed by the determinant
 double Determinant(Matrix basis) {
-    Matrix lower(basis.size());
-    Matrix upper(basis.size());
-    for (int i = 0; i < basis.size(); ++i) {
-        // Upper
-        for (int k = i; k < basis.size(); ++k) {
-            double sum = 0;
-            for (int y = 0; y < i; ++y) {
-                sum += basis[i][y] * basis[y][k];
-            }
-            upper[i][k] = basis[i][k] / sum;
+    Matrix lower(basis.size(), Vector(basis.size(),0));
+    Matrix upper(basis.size(), Vector(basis.size(), 0));
+    for (int i = 0; i < basis.size(); i++) {
+            lower[i][i] = 1;
+    }
+    for (int k = 0; k < basis.size(); ++k) {
+        // Initialise lower
+        upper[k][k] = basis[k][k];
+        for (int i = k+1; i < basis.size(); i++) {
+            lower[i][k] = basis[i][k] / upper[k][k];
+            upper[k][i] = basis[k][i];
         }
-
-        // Lower
-        for (int k = i; k < basis.size(); ++k) {
-            if (i == k) {
-                lower[i][i] = 1;
-            } else {
-                double sum = 0;
-                for (int j = 0; j < i; ++j) {
-                    sum += basis[k][j] * basis[j][i];
-                }
-                lower[k][i] = (basis[k][i] - sum) / upper[i][i];
+        for (int i = k+1; i < basis.size(); i++) {
+            for (int j = k+1; j < basis.size(); j++) {
+                basis[i][j] -= lower[i][k] * upper[k][j];
             }
-            
         }
     }
-    printMatrix(upper);
-    printMatrix(lower);
+    double det = 1;
+    for (int i = 0; i < basis.size(); i++) {
+        cout << upper[i][i] << endl;
+        det = det * upper[i][i];
+    }
+    return det;
 }
 
 // Main algorithm
 int main(int argc, char* argv[]) {
     // For memory usage
-    // struct rusage usage;
-    // getrusage(RUSAGE_SELF, &usage);
-    
+    struct rusage usage;
+    getrusage(RUSAGE_SELF, &usage);
     int NoOfVectors = sqrt(argc - 1);
 
     if (NoOfVectors * NoOfVectors != argc-1) {
@@ -256,18 +247,14 @@ int main(int argc, char* argv[]) {
         exit(EXIT_FAILURE);
     }
 
-    // Matrix basis = readArguments(argc, argv, NoOfVectors);
-
     Matrix basis;
 
     for (int vec = 1; vec < argc; vec += NoOfVectors) {
         Vector currentVector;
-        cout << "Vector:" << endl;
         for (int x = 0; x < NoOfVectors; ++x) {
             string arg = argv[vec+x];
             arg.erase(remove(arg.begin(), arg.end(), '['), arg.end());
             arg.erase(remove(arg.begin(), arg.end(), ']'), arg.end());
-            cout << arg << endl;
             try {
                 currentVector.push_back(stof(arg));
             } catch (exception& e) {
@@ -276,44 +263,45 @@ int main(int argc, char* argv[]) {
         }
         basis.push_back(currentVector);
     }
-    printMatrix(basis);
+
+    double det = 0.0;
+    det = Determinant(basis);
+    cout << "Determinant: " << det << endl;
+    if (det == 0 || isnan(det)) {
+        cerr << "Error - input vectors are linearly dependent." << endl;
+        exit(EXIT_FAILURE);
+    }
 
     // // Sets start time
-    // auto startTime = high_resolution_clock().now();
+    auto startTime = high_resolution_clock().now();
 
     // // Calls LLL on input basis
     Matrix result = LLL(basis, 0.75);
-    // printMatrix(result);
 
     // // Takes note of shortest vector from LLL reduced basis
-    // cout << "Shortest Vector after LLL" << endl;
     Vector x = shortestVector(result);
     double shortestNorm = eNorm(x);
-    // printVector(x);
 
-    // // Enumerates lattice around LLL-reduced basis to see if any other vectors are shorter than one in the basis
-    // cout << "Shortest vector after enumeration" << endl;
+    // // Enumerates lattice around LLL-reduced basis
+    // to see if any other vectors are shorter than one in the basis
     x = enumerate(result, x);
     shortestNorm = eNorm(x);
-    // printVector(y);
 
     // // Records end time
-    // auto endTime = high_resolution_clock().now();
+    auto endTime = high_resolution_clock().now();
 
     // // Outputs running time of algorithm
-    // auto duration = duration_cast<microseconds>(endTime - startTime);
-    // cout << "Run-time for given basis: " << duration.count() << endl;
+    auto duration = duration_cast<microseconds>(endTime - startTime);
+    cout << "Run-time for given basis: " << duration.count() << endl;
 
     // // Writes euclidean norm of shortest vector to text file
     std::ofstream myfile("result.txt");
-
     if (myfile.is_open()) {
         myfile << shortestNorm;
-        myfile.close(); 
+        myfile.close();
     } else {
         cerr << "Error creating file" << endl;
     }
-    
     // Ends program
     return 0;
 }
