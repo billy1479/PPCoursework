@@ -1,6 +1,6 @@
 CXX = g++
 CXXFLAGS = -std=c++11 -Wall
-SRC = main.cc
+SRC = main.cpp
 TARGET = runme
 TEST = [15.0 -7.0 -7.0] [-7.0 15.0 -7.0] [-7.0 -7.0 15.0]
 
